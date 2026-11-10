@@ -21,7 +21,6 @@
       --ink-muted: #5A5A5A;
       --border-color: #E8E2D9;
       --radius: 12px;
-      --shadow: 0 4px 16px rgba(150, 17, 69, 0.08);
       --font-display: 'Lilita One', cursive, sans-serif;
       --font-script: 'Pacifico', cursive;
       --font-body: 'Nunito', sans-serif;
@@ -37,7 +36,7 @@
       flex-direction: column;
     }
 
-    /* Top Navigation Bar */
+    /* Top Navigation */
     header {
       background-color: var(--burgundy);
       color: #FFF;
@@ -76,7 +75,7 @@
       gap: 12px;
     }
 
-    /* Live Sync Status Pill */
+    /* Sync Status Pill */
     .sync-status {
       display: flex;
       align-items: center;
@@ -133,14 +132,7 @@
     }
     .btn-gold:hover { background-color: #b58810; }
 
-    .btn-outline {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.4);
-      color: #FFF;
-    }
-    .btn-outline:hover { background: rgba(255,255,255,0.1); }
-
-    /* Main Board Layout */
+    /* Board Columns */
     main {
       padding: 24px;
       flex: 1;
@@ -149,8 +141,8 @@
 
     .board-grid {
       display: grid;
-      grid-template-columns: repeat(5, minmax(320px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(5, minmax(310px, 1fr));
+      gap: 16px;
       align-items: start;
     }
 
@@ -198,7 +190,7 @@
       gap: 12px;
     }
 
-    /* Individual Item Card */
+    /* Cards */
     .card {
       background: var(--paper-card);
       border: 1px solid var(--border-color);
@@ -247,13 +239,12 @@
       line-height: 1.3;
     }
 
-    /* Card Media Thumbnail Box */
     .card-thumb-wrap {
       width: 100%;
       height: 160px;
       border-radius: 6px;
       overflow: hidden;
-      background: #000;
+      background: #1C1C1C;
       position: relative;
       display: flex;
       align-items: center;
@@ -290,7 +281,7 @@
       overflow: hidden;
     }
 
-    /* Modal Overlay (Inspector & QA) */
+    /* Modal */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -348,7 +339,6 @@
       max-height: calc(90vh - 65px);
     }
 
-    /* Left Side: Media Preview Panel */
     .media-preview-pane {
       background: #111;
       padding: 24px;
@@ -384,12 +374,6 @@
     }
 
     .slide-media-view img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .slide-media-view video {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -434,7 +418,6 @@
     }
     .dot.active { background: var(--yellow-pale); }
 
-    /* Right Side: Copy & QA Form */
     .details-pane {
       padding: 24px;
       display: flex;
@@ -518,7 +501,6 @@
     }
     .btn-reject:hover { background: #B91C1C; }
 
-    /* Empty and Error placeholders */
     .empty-state {
       text-align: center;
       padding: 30px 10px;
@@ -529,7 +511,6 @@
 </head>
 <body>
 
-  <!-- Top Navigation -->
   <header>
     <div class="brand-group">
       <div class="brand-title">GUIDES BY LOCALS</div>
@@ -544,10 +525,8 @@
     </div>
   </header>
 
-  <!-- Kanban Stages Board -->
   <main>
     <div class="board-grid">
-      <!-- Stage 1 -->
       <div class="board-col">
         <div class="col-header">
           <div class="col-title">1. Research & Ideation</div>
@@ -556,7 +535,6 @@
         <div class="col-cards" id="col-1"></div>
       </div>
 
-      <!-- Stage 2 -->
       <div class="board-col">
         <div class="col-header">
           <div class="col-title">2. Production & Drafts</div>
@@ -565,7 +543,6 @@
         <div class="col-cards" id="col-2"></div>
       </div>
 
-      <!-- Stage 3 -->
       <div class="board-col">
         <div class="col-header">
           <div class="col-title">3. QA & Compliance Gate</div>
@@ -574,7 +551,6 @@
         <div class="col-cards" id="col-3"></div>
       </div>
 
-      <!-- Stage 4 -->
       <div class="board-col">
         <div class="col-header">
           <div class="col-title">4. Staging & Scheduled</div>
@@ -583,7 +559,6 @@
         <div class="col-cards" id="col-4"></div>
       </div>
 
-      <!-- Stage 5 -->
       <div class="board-col">
         <div class="col-header">
           <div class="col-title">5. Published & Triage</div>
@@ -594,7 +569,6 @@
     </div>
   </main>
 
-  <!-- Post Inspector & QA Modal -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
       <div class="modal-header">
@@ -603,12 +577,9 @@
       </div>
       <div class="modal-body">
         
-        <!-- Left: Real Preview & Carousel Controls -->
         <div class="media-preview-pane">
           <div class="phone-stage aspect-4-5" id="phoneContainer">
-            <div class="slide-media-view" id="slideMediaContainer">
-              <!-- Rendered via JS -->
-            </div>
+            <div class="slide-media-view" id="slideMediaContainer"></div>
             <div class="carousel-nav" id="carouselNav" style="display:none;">
               <button class="carousel-btn" onclick="prevSlide()">&larr;</button>
               <div class="carousel-dots" id="carouselDots"></div>
@@ -618,7 +589,6 @@
           <div style="font-size: 11px; color: #888;" id="slideIndicator">Slide 1 of 1</div>
         </div>
 
-        <!-- Right: Content Details & QA Audit Gate -->
         <div class="details-pane">
           <div class="field-group">
             <div class="field-label">Post Style & Type</div>
@@ -640,7 +610,6 @@
             <div class="field-text" id="modalCTA">—</div>
           </div>
 
-          <!-- Interactive QA Checklist Section -->
           <div class="qa-box">
             <h4>Stage 3 QA Audit Verification</h4>
             <div class="qa-criteria">
@@ -661,7 +630,6 @@
   </div>
 
   <script>
-    // HARDCODED APPS SCRIPT WEBHOOK URL
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyd1hJyRKEiuJS7SDOt6cY0tFm-4yeHuBaHGzv37gF9jTa_l776urpXrqLSfCAYJzPKhg/exec";
 
     let state = {
@@ -670,7 +638,6 @@
       currentSlide: 0
     };
 
-    // Initialize on page load
     window.addEventListener('DOMContentLoaded', () => {
       fetchLiveItems();
     });
@@ -683,26 +650,36 @@
       syncText.innerText = "Syncing with Google Sheet...";
 
       try {
-        const res = await fetch(APPS_SCRIPT_URL);
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: "GET",
+          redirect: "follow",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const data = await res.json();
 
-        if (data.status === "success" && Array.isArray(data.items)) {
+        if (data && data.status === "success" && Array.isArray(data.items)) {
           state.items = data.items;
           renderBoard();
           syncDot.className = "sync-dot";
           syncText.innerText = `Live: ${data.items.length} items synced`;
         } else {
-          throw new Error(data.message || "Invalid payload format");
+          throw new Error((data && data.message) || "Invalid payload format");
         }
       } catch (err) {
-        console.error("Sync error:", err);
+        console.error("Sync error details:", err);
         syncDot.className = "sync-dot error";
         syncText.innerText = "Sync failed (Check permissions)";
       }
     }
 
     function renderBoard() {
-      // Clear all stage columns
       for (let s = 1; s <= 5; s++) {
         document.getElementById(`col-${s}`).innerHTML = "";
         document.getElementById(`count-${s}`).innerText = "0";
@@ -754,7 +731,6 @@
         colEl.appendChild(card);
       });
 
-      // Update counters
       for (let s = 1; s <= 5; s++) {
         document.getElementById(`count-${s}`).innerText = stageCounts[s];
         if (stageCounts[s] === 0) {
@@ -763,7 +739,6 @@
       }
     }
 
-    // Modal Inspection Logic
     function openModal(item) {
       state.activeItem = item;
       state.currentSlide = 0;
@@ -774,7 +749,6 @@
       document.getElementById('modalCaption').innerText = item.caption || 'No caption entered';
       document.getElementById('modalCTA').innerText = item.cta || 'No CTA entered';
 
-      // Adjust aspect ratio stage styling
       const phoneContainer = document.getElementById('phoneContainer');
       if (item.dimension === '9:16' || item.postType === 'REEL') {
         phoneContainer.className = "phone-stage aspect-9-16";
@@ -782,7 +756,6 @@
         phoneContainer.className = "phone-stage aspect-4-5";
       }
 
-      // Reset QA checks
       ['qa1', 'qa2', 'qa3', 'qa4'].forEach(id => document.getElementById(id).checked = false);
 
       renderSlide();
@@ -839,10 +812,8 @@
       }
     }
 
-    // Direct Image Fallback Handler for Google Drive cross-origin endpoints
     function handleImageFallback(imgElement) {
       const currentSrc = imgElement.src;
-      // If lh3 endpoint failed, attempt drive.google.com direct thumbnail fallback
       if (currentSrc.includes('lh3.googleusercontent.com/d/')) {
         const idMatch = currentSrc.match(/[-\w]{25,}/);
         if (idMatch) {
@@ -854,7 +825,6 @@
       imgElement.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22500%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%23888%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20text-anchor%3D%22middle%22%3EImage%20restricted%20or%20unavailable%3C%2Ftext%3E%3C%2Fsvg%3E";
     }
 
-    // QA Gate actions
     function approveCurrentPost() {
       const allChecked = ['qa1', 'qa2', 'qa3', 'qa4'].every(id => document.getElementById(id).checked);
       if (!allChecked) {
@@ -862,7 +832,7 @@
         return;
       }
       if (state.activeItem) {
-        state.activeItem.stage = 4; // Move to Stage 4 (Staging & Scheduled)
+        state.activeItem.stage = 4;
         renderBoard();
         closeModal();
       }
@@ -870,7 +840,7 @@
 
     function requestRevision() {
       if (state.activeItem) {
-        state.activeItem.stage = 2; // Return to Stage 2 (Drafts / Production)
+        state.activeItem.stage = 2;
         renderBoard();
         closeModal();
       }
