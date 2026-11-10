@@ -36,7 +36,6 @@
       flex-direction: column;
     }
 
-    /* Top Navigation */
     header {
       background-color: var(--burgundy);
       color: #FFF;
@@ -75,7 +74,6 @@
       gap: 12px;
     }
 
-    /* Sync Status Pill */
     .sync-status {
       display: flex;
       align-items: center;
@@ -132,7 +130,6 @@
     }
     .btn-gold:hover { background-color: #b58810; }
 
-    /* Board Columns */
     main {
       padding: 24px;
       flex: 1;
@@ -190,7 +187,6 @@
       gap: 12px;
     }
 
-    /* Cards */
     .card {
       background: var(--paper-card);
       border: 1px solid var(--border-color);
@@ -281,7 +277,6 @@
       overflow: hidden;
     }
 
-    /* Modal */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -630,7 +625,8 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyd1hJyRKEiuJS7SDOt6cY0tFm-4yeHuBaHGzv37gF9jTa_l776urpXrqLSfCAYJzPKhg/exec";
+    // Configured with the latest Apps Script Web App Deployment URL
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyaawKazfxDn_IzhmybCYZcY-bCqLgNWCErWdUX9NtCTCfVPYqqp1qBKpcSwhkp6Pw9Q/exec";
 
     let state = {
       items: [],
@@ -642,41 +638,42 @@
       fetchLiveItems();
     });
 
-    async function fetchLiveItems() {
+    function fetchLiveItems() {
       const syncDot = document.getElementById('syncDot');
       const syncText = document.getElementById('syncText');
       
       syncDot.className = "sync-dot syncing";
       syncText.innerText = "Syncing with Google Sheet...";
 
-      try {
-        const res = await fetch(APPS_SCRIPT_URL, {
-          method: "GET",
-          redirect: "follow",
-          headers: {
-            "Accept": "application/json"
-          }
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        const data = await res.json();
-
+      // Global callback for JSONP responses
+      window.handleGblSheetData = function(data) {
         if (data && data.status === "success" && Array.isArray(data.items)) {
           state.items = data.items;
           renderBoard();
           syncDot.className = "sync-dot";
           syncText.innerText = `Live: ${data.items.length} items synced`;
         } else {
-          throw new Error((data && data.message) || "Invalid payload format");
+          syncDot.className = "sync-dot error";
+          syncText.innerText = (data && data.message) || "Sync failed";
         }
-      } catch (err) {
-        console.error("Sync error details:", err);
+        const scriptEl = document.getElementById('jsonp-script');
+        if (scriptEl) scriptEl.remove();
+      };
+
+      // Clean up previous JSONP script if any
+      const existingScript = document.getElementById('jsonp-script');
+      if (existingScript) existingScript.remove();
+
+      // Append dynamic script tag
+      const script = document.createElement('script');
+      script.id = 'jsonp-script';
+      script.src = `${APPS_SCRIPT_URL}?callback=handleGblSheetData&t=${Date.now()}`;
+      script.onerror = function() {
         syncDot.className = "sync-dot error";
         syncText.innerText = "Sync failed (Check permissions)";
-      }
+      };
+
+      document.body.appendChild(script);
     }
 
     function renderBoard() {
