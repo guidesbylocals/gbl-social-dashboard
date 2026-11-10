@@ -625,7 +625,6 @@
   </div>
 
   <script>
-    // Configured with the latest Apps Script Web App Deployment URL
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyaawKazfxDn_IzhmybCYZcY-bCqLgNWCErWdUX9NtCTCfVPYqqp1qBKpcSwhkp6Pw9Q/exec";
 
     let state = {
@@ -645,7 +644,6 @@
       syncDot.className = "sync-dot syncing";
       syncText.innerText = "Syncing with Google Sheet...";
 
-      // Global callback for JSONP responses
       window.handleGblSheetData = function(data) {
         if (data && data.status === "success" && Array.isArray(data.items)) {
           state.items = data.items;
@@ -660,11 +658,9 @@
         if (scriptEl) scriptEl.remove();
       };
 
-      // Clean up previous JSONP script if any
       const existingScript = document.getElementById('jsonp-script');
       if (existingScript) existingScript.remove();
 
-      // Append dynamic script tag
       const script = document.createElement('script');
       script.id = 'jsonp-script';
       script.src = `${APPS_SCRIPT_URL}?callback=handleGblSheetData&t=${Date.now()}`;
