@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guides by Locals — Scheduled Social Media Pipeline</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              burgundy: '#961145',
+              burgundyDark: '#700c33',
+              burgundyLight: '#bc1a58',
+              marigold: '#D4A017',
+              marigoldDark: '#a67d12',
+              parchment: '#F9F6EE',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Sleek Dark Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-brand-burgundy selection:text-white">
+
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-4 lg:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-burgundy flex items-center justify-center font-bold text-white shadow-lg shadow-brand-burgundy/30 border border-brand-burgundyLight">
+          GL
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold text-white tracking-tight">Guides by Locals</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-brand-marigold/20 text-brand-marigold border border-brand-marigold/30">
+              CDMX Editorial Engine
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Automated Weekly Workflow &amp; Scheduled Pipeline Gates</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <div id="syncStatusBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-300">
+          <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="syncStatusText">Ready</span>
+        </div>
+
+        <button id="btnSyncNow" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+          <svg class="w-3.5 h-3.5 text-brand-marigold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Sync Now</span>
+        </button>
+
+        <button id="btnOpenSchedule" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+          <span>📅 Weekly Schedule</span>
+        </button>
+
+        <button id="btnOpenSettings" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-brand-burgundy hover:bg-brand-burgundyDark text-white text-xs font-semibold shadow-md shadow-brand-burgundy/20 transition">
+          <span>⚙️ API &amp; Folders</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- WORKFLOW AUTOMATION CADENCE BANNER (COLLAPSIBLE) -->
+  <section id="scheduleBanner" class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border-b border-slate-800 py-3.5 px-4 lg:px-8">
+    <div class="max-w-7xl mx-auto space-y-2">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-brand-marigold">Weekly Scheduled Automation Gates</span>
+          <span class="text-[11px] text-slate-400">• Mon–Thu Recurring Agents</span>
+        </div>
+        <button id="btnToggleSchedule" class="text-[11px] text-slate-400 hover:text-white transition">Hide Schedule ✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 pt-1 text-xs">
+        <!-- Mon 3AM -->
+        <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80">
+          <div class="flex items-center justify-between text-[11px] font-bold text-amber-400">
+            <span>MON 3:00 AM</span>
+            <span class="text-[9px] px-1 py-0.2 rounded bg-amber-400/10 text-amber-300">Phase 1</span>
+          </div>
+          <p class="font-semibold text-slate-200 mt-1">Ideation &amp; Discovery</p>
+          <p class="text-[11px] text-slate-400">@guides-by-locals-voice</p>
+          <p class="text-[10px] text-slate-500 mt-1">Output: Status &quot;Idea&quot;</p>
+        </div>
+
+        <!-- Tue 3AM -->
+        <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80">
+          <div class="flex items-center justify-between text-[11px] font-bold text-purple-400">
+            <span>TUE 3:00 AM</span>
+            <span class="text-[9px] px-1 py-0.2 rounded bg-purple-400/10 text-purple-300">Phase 2</span>
+          </div>
+          <p class="font-semibold text-slate-200 mt-1">Drafting, Plates &amp; Revisions</p>
+          <p class="text-[11px] text-slate-400">Processes &quot;Drafted&quot; &amp; &quot;Revision Needed&quot;</p>
+          <p class="text-[10px] text-slate-500 mt-1">Reads QA Notes &rarr; 02-Drafts In Review</p>
+        </div>
+
+        <!-- Wed 1AM -->
+        <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80">
+          <div class="flex items-center justify-between text-[11px] font-bold text-blue-400">
+            <span>WED 1:00 AM</span>
+            <span class="text-[9px] px-1 py-0.2 rounded bg-blue-400/10 text-blue-300">Phase 3</span>
+          </div>
+          <p class="font-semibold text-slate-200 mt-1">4-Point QA &amp; Re-Audit Gate</p>
+          <p class="text-[11px] text-slate-400">@social-qa-auditor</p>
+          <p class="text-[10px] text-slate-500 mt-1">Outputs &quot;QA Passed&quot; or &quot;Revision Needed&quot;</p>
+        </div>
+
+        <!-- Wed 3AM -->
+        <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80">
+          <div class="flex items-center justify-between text-[11px] font-bold text-indigo-400">
+            <span>WED 3:00 AM</span>
+            <span class="text-[9px] px-1 py-0.2 rounded bg-indigo-400/10 text-indigo-300">Phase 4</span>
+          </div>
+          <p class="font-semibold text-slate-200 mt-1">9:16 Video Reels</p>
+          <p class="text-[11px] text-slate-400">Motion Pans &amp; Lilita One</p>
+          <p class="text-[10px] text-slate-500 mt-1">Processes &quot;Video Ready&quot; (Queued)</p>
+        </div>
+
+        <!-- Thu 3AM -->
+        <div class="bg-slate-950/80 p-2.5 rounded-lg border border-emerald-900/40">
+          <div class="flex items-center justify-between text-[11px] font-bold text-emerald-400">
+            <span>THU 3:00 AM</span>
+            <span class="text-[9px] px-1 py-0.2 rounded bg-emerald-400/10 text-emerald-300">Phase 5</span>
+          </div>
+          <p class="font-semibold text-slate-200 mt-1">Staging &amp; Sign-Off</p>
+          <p class="text-[11px] text-slate-400">Final Human Sign-off</p>
+          <p class="text-[10px] text-slate-500 mt-1">Stage: 03-Approved for Scheduling</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- KPI STATS SUMMARY GRID -->
+    <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition">
+        <p class="text-xs font-medium text-slate-400">Total Pipeline</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <span id="kpiTotal" class="text-2xl font-bold text-white tracking-tight">0</span>
+          <span class="text-xs text-slate-500">Posts</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-emerald-900/40 rounded-xl p-4 shadow-sm hover:border-emerald-700/60 transition">
+        <p class="text-xs font-medium text-emerald-400">Phase 5: Approved</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <span id="kpiApproved" class="text-2xl font-bold text-emerald-400 tracking-tight">0</span>
+          <span class="text-xs px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold">Thu 3AM</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-blue-900/40 rounded-xl p-4 shadow-sm hover:border-blue-700/60 transition">
+        <p class="text-xs font-medium text-blue-400">Ready for Review</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <span id="kpiReadyReview" class="text-2xl font-bold text-blue-400 tracking-tight">0</span>
+          <span class="text-xs text-blue-300/80">Action Needed</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-amber-900/40 rounded-xl p-4 shadow-sm hover:border-amber-700/60 transition">
+        <p class="text-xs font-medium text-amber-400">Recently Moved</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <span id="kpiQueuedAgent" class="text-2xl font-bold text-amber-400 tracking-tight">0</span>
+          <span class="text-xs text-amber-300/80">Awaiting Agent</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-purple-900/40 rounded-xl p-4 shadow-sm hover:border-purple-700/60 transition">
+        <p class="text-xs font-medium text-purple-400">Media Generated</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <span id="kpiMediaCount" class="text-2xl font-bold text-purple-400 tracking-tight">0</span>
+          <span class="text-xs text-purple-300/80">Plates / Reels</span>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-brand-burgundy/30 to-slate-900 border border-brand-burgundy/50 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-slate-300">Readiness Rate</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <span id="kpiReadiness" class="text-2xl font-bold text-brand-marigold tracking-tight">0%</span>
+          <span class="text-xs text-slate-400">Approved %</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKFLOW CONTROLS & FILTER BAR -->
+    <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4 shadow-sm">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <div class="relative w-full md:w-80">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </span>
+          <input type="text" id="searchInput" placeholder="Search by ID, hook, copy, location..." class="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-burgundy transition">
+          <button id="btnClearSearch" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 text-xs">✕</button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <select id="filterStage" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-brand-burgundy transition">
+            <option value="ALL">All Weekly Stages</option>
+            <option value="IDEA">Mon 3AM: Ideation (Idea)</option>
+            <option value="DRAFTED">Tue 3AM: Drafting &amp; Plates</option>
+            <option value="REVISION">⚠️ Revision Needed (Tue 3AM Re-Draft)</option>
+            <option value="QA_PASSED">Wed 1AM: 4-Point QA Passed</option>
+            <option value="VIDEO_READY">Wed 3AM: Video Production</option>
+            <option value="APPROVED">Thu 3AM: Staged &amp; Approved</option>
+          </select>
+
+          <select id="filterReviewState" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-brand-burgundy transition">
+            <option value="ALL">All Review States</option>
+            <option value="READY_REVIEW">👀 Ready for Review</option>
+            <option value="QUEUED_AGENT">⏳ Recently Moved (Awaiting Agent)</option>
+            <option value="STAGED">✅ Staged &amp; Approved</option>
+          </select>
+
+          <select id="filterChannel" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-brand-burgundy transition">
+            <option value="ALL">All Platforms</option>
+            <option value="Instagram">Instagram</option>
+            <option value="TikTok">TikTok</option>
+            <option value="Threads">Threads</option>
+          </select>
+
+          <select id="filterPillar" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-brand-burgundy transition">
+            <option value="ALL">All Pillars</option>
+            <option value="Cultural Lore">Cultural Lore</option>
+            <option value="Neighborhood Guides">Neighborhood Guides</option>
+            <option value="Street Food">Street Food</option>
+            <option value="Maps">Maps</option>
+          </select>
+
+          <select id="filterMedia" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-brand-burgundy transition">
+            <option value="ALL">All Assets</option>
+            <option value="HAS_MEDIA">With Media Preview</option>
+            <option value="IMAGE">Images Only</option>
+            <option value="VIDEO">Videos Only</option>
+          </select>
+
+          <button id="btnResetFilters" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW TOGGLES -->
+      <div class="flex items-center justify-between border-t border-slate-800/80 pt-3 flex-wrap gap-2">
+        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+          <button id="tabKanban" class="view-tab active px-3 py-1.5 rounded-md text-xs font-medium text-white bg-brand-burgundy shadow-sm transition">
+            Weekly Workflow Board
+          </button>
+          <button id="tabGallery" class="view-tab px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white transition">
+            Media Gallery
+          </button>
+          <button id="tabTable" class="view-tab px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white transition">
+            Table View
+          </button>
+          <button id="tabTimeline" class="view-tab px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white transition">
+            Timeline Schedule
+          </button>
+          <button id="tabAnalytics" class="view-tab px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white transition">
+            Analytics &amp; Insights
+          </button>
+        </div>
+
+        <div class="text-xs text-slate-400">
+          Showing <span id="filteredCount" class="font-bold text-white">0</span> of <span id="totalItemsCount" class="font-bold text-white">0</span> posts
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. KANBAN / PIPELINE BOARD VIEW (ALIGNED TO MON-THU WORKFLOW) -->
+    <section id="viewKanban" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
+      
+      <!-- Stage 1: Ideation & Discovery (Mon 3AM) -->
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col h-[780px]">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Ideation &amp; Discovery</h3>
+            </div>
+            <p class="text-[10px] text-slate-400">Mon 3AM • 01-Raw Research</p>
+          </div>
+          <span id="colCountIdea" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+        </div>
+        <div id="colListIdea" class="flex-1 overflow-y-auto pt-3 space-y-3 pr-1"></div>
+      </div>
+
+      <!-- Stage 2: Drafting & Plates (Tue 3AM) -->
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col h-[780px]">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Drafting &amp; Plates</h3>
+            </div>
+            <p class="text-[10px] text-slate-400">Tue 3AM • 02-Drafts In Review</p>
+          </div>
+          <span id="colCountDraft" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+        </div>
+        <div id="colListDraft" class="flex-1 overflow-y-auto pt-3 space-y-3 pr-1"></div>
+      </div>
+
+      <!-- Stage 3: 4-Point QA Gate (Wed 1AM) -->
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col h-[780px]">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">QA Passed (4 Gates)</h3>
+            </div>
+            <p class="text-[10px] text-slate-400">Wed 1AM • Facts, Voice, Accents</p>
+          </div>
+          <span id="colCountQA" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+        </div>
+        <div id="colListQA" class="flex-1 overflow-y-auto pt-3 space-y-3 pr-1"></div>
+      </div>
+
+      <!-- Stage 4: 9:16 Video Reels (Wed 3AM) -->
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col h-[780px]">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Video Production</h3>
+            </div>
+            <p class="text-[10px] text-slate-400">Wed 3AM • Motion Pans &amp; Lilita</p>
+          </div>
+          <span id="colCountVideo" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+        </div>
+        <div id="colListVideo" class="flex-1 overflow-y-auto pt-3 space-y-3 pr-1"></div>
+      </div>
+
+      <!-- Stage 5: Final Staging & Scheduling (Thu 3AM) -->
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col h-[780px]">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Approved &amp; Staged</h3>
+            </div>
+            <p class="text-[10px] text-slate-400">Thu 3AM • 03-Approved Scheduling</p>
+          </div>
+          <span id="colCountApproved" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+        </div>
+        <div id="colListApproved" class="flex-1 overflow-y-auto pt-3 space-y-3 pr-1"></div>
+      </div>
+
+    </section>
+
+    <!-- 2. MEDIA GALLERY VIEW -->
+    <section id="viewGallery" class="hidden space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div>
+          <h3 class="text-sm font-bold text-white">Visual &amp; Video Creative Gallery</h3>
+          <p class="text-xs text-slate-400">Generated cartographic map plates, botanical field guides, cultural plates, and video reels</p>
+        </div>
+        <span id="galleryCountBadge" class="text-xs px-2.5 py-1 rounded-full bg-brand-burgundy/20 text-brand-burgundyLight border border-brand-burgundy/30 font-semibold">12 Assets Available</span>
+      </div>
+      <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- 3. DATA TABLE VIEW -->
+    <section id="viewTable" class="hidden bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">Post ID</th>
+              <th class="py-3 px-4">Media</th>
+              <th class="py-3 px-4">Target Date</th>
+              <th class="py-3 px-4">Platform</th>
+              <th class="py-3 px-4">Content Pillar</th>
+              <th class="py-3 px-4">Working Hook / Concept</th>
+              <th class="py-3 px-4">Workflow Gate</th>
+              <th class="py-3 px-4">Review State</th>
+              <th class="py-3 px-4">Asset Folder</th>
+              <th class="py-3 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-800/80"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. TIMELINE SCHEDULE VIEW -->
+    <section id="viewTimeline" class="hidden space-y-6">
+      <div id="timelineContainer" class="space-y-6"></div>
+    </section>
+
+    <!-- 5. ANALYTICS & INSIGHTS VIEW -->
+    <section id="viewAnalytics" class="hidden space-y-6">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div>
+          <h3 class="text-sm font-bold text-white">Pipeline Analytics &amp; Breakdown</h3>
+          <p id="analyticsFilterSubtitle" class="text-xs text-slate-400">Reflects active search and filter criteria</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+          <h3 class="text-sm font-bold text-white mb-1">Platform Share</h3>
+          <p class="text-xs text-slate-400 mb-4">Post allocation across social channels</p>
+          <div class="relative h-64"><canvas id="chartChannel"></canvas></div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+          <h3 class="text-sm font-bold text-white mb-1">Content Pillars</h3>
+          <p class="text-xs text-slate-400 mb-4">Volume across thematic pillars</p>
+          <div class="relative h-64"><canvas id="chartPillar"></canvas></div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+          <h3 class="text-sm font-bold text-white mb-1">Weekly Stage Funnel</h3>
+          <p class="text-xs text-slate-400 mb-4">Posts by scheduled automation phase</p>
+          <div class="relative h-64"><canvas id="chartStatus"></canvas></div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+          <h3 class="text-sm font-bold text-white mb-1">Review Readiness</h3>
+          <p class="text-xs text-slate-400 mb-4">Actionable vs. agent-queued items</p>
+          <div class="relative h-64"><canvas id="chartReadiness"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-900 py-4 px-6 text-center text-xs text-slate-500">
+    <p>Guides by Locals • CDMX Hyper-Local Content Pipeline • Weekly Scheduled Automation System</p>
+  </footer>
+
+  <!-- DETAIL DRAWER / MODAL -->
+  <div id="postModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <span id="modalIdBadge" class="px-2.5 py-1 rounded bg-brand-burgundy/20 text-brand-burgundyLight border border-brand-burgundy/30 text-xs font-bold"></span>
+          <span id="modalStatusBadge" class="px-2.5 py-1 rounded text-xs font-semibold"></span>
+          <span id="modalMediaBadge" class="hidden px-2.5 py-1 rounded text-xs font-semibold bg-amber-500/20 text-brand-marigold border border-amber-500/30"></span>
+        </div>
+        <button id="btnCloseModal" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-5 text-xs text-slate-300">
+        
+        <!-- Media Preview -->
+        <div id="modalMediaContainer" class="hidden rounded-xl border border-slate-800 bg-slate-950 overflow-hidden space-y-2 p-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-brand-marigold uppercase tracking-wider flex items-center gap-1.5">
+              <span>🎨</span> Generated Visual Asset
+            </span>
+            <a id="modalMediaViewBtn" href="#" target="_blank" rel="noopener noreferrer" class="text-[11px] text-brand-marigold hover:underline font-semibold flex items-center gap-1">
+              <span>Open on Drive</span> ↗
+            </a>
+          </div>
+          <div id="modalImageWrapper" class="hidden relative rounded-lg overflow-hidden border border-slate-800 bg-black max-h-72 flex items-center justify-center">
+            <img id="modalImg" src="" alt="Generated Content Asset" referrerpolicy="no-referrer" class="max-h-72 w-auto object-contain">
+            <div id="modalImgFallback" class="hidden py-8 px-4 text-center text-slate-400 space-y-1">
+              <span>🔒 Private Google Drive Asset</span>
+              <p class="text-[11px] text-slate-500">Enable &quot;Anyone with the link&quot; in Google Drive to display directly.</p>
+            </div>
+          </div>
+          <div id="modalVideoWrapper" class="hidden relative rounded-lg overflow-hidden border border-slate-800 bg-black aspect-video flex items-center justify-center">
+            <iframe id="modalVideoFrame" src="" class="w-full h-full border-0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+          </div>
+          <p id="modalMediaCaption" class="text-[11px] text-slate-400 italic text-center"></p>
+        </div>
+
+        <!-- 4-Point QA Gate Status Card (Fixed nested badge wrapper - BUG-011) -->
+        <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-2">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-[11px] uppercase font-bold text-blue-400 tracking-wider">Stage Readiness &amp; 4-Point Quality Gate</span>
+            <div class="flex items-center gap-2">
+              <div id="modalStageStateBadge" class="inline-flex items-center"></div>
+              <span id="modalMovedAtText" class="text-[10px] text-slate-400"></span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400">✓</span>
+              <span>1. Fact &amp; Transit Check</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400">✓</span>
+              <span>2. English + Cultural Spanish</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400">✓</span>
+              <span>3. Accurate Accents &amp; Grammar</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400">✓</span>
+              <span>4. Folder Staging &amp; UTMs</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+          <div>
+            <p class="text-[11px] text-slate-500 font-medium">Target Publish Date</p>
+            <p id="modalDate" class="text-sm font-semibold text-white mt-0.5">—</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-slate-500 font-medium">Channel / Platform</p>
+            <p id="modalChannel" class="text-sm font-semibold text-white mt-0.5">—</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-slate-500 font-medium">Content Pillar</p>
+            <p id="modalPillar" class="text-sm font-semibold text-white mt-0.5">—</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Working Hook / Title</label>
+          <div id="modalHook" class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-semibold text-slate-100 leading-relaxed"></div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] uppercase font-bold text-slate-400 tracking-wider">Caption / Draft Copy</label>
+            <button id="btnCopyCaption" class="text-[11px] text-brand-marigold hover:underline flex items-center gap-1 font-medium">
+              <span>Copy Caption</span>
+            </button>
+          </div>
+          <div id="modalCopy" class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl whitespace-pre-line text-slate-200 leading-relaxed max-h-48 overflow-y-auto"></div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Visual &amp; Format Specs (Field Guide Palette)</label>
+          <div id="modalVisualSpecs" class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-300"></div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Location &amp; Transit Verification</label>
+          <div id="modalLocation" class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-300"></div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] uppercase font-bold text-slate-400 mb-1 tracking-wider">QA Audit Log</label>
+          <div id="modalQANotes" class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-300"></div>
+        </div>
+
+        <!-- Workflow Actions: Approve / Advance & Revision Request -->
+        <div class="border-t border-slate-800 pt-4 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <label class="block text-[11px] uppercase font-bold text-slate-400 tracking-wider">Editorial Actions (Scheduled Pipeline Sync)</label>
+            <button id="btnMarkReadyReview" type="button" class="hidden text-[11px] text-blue-400 hover:text-blue-300 font-semibold underline transition">
+              👀 Mark as Ready for Review
+            </button>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <button id="btnRequestRevision" type="button" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-amber-900/30 text-amber-300 border border-slate-700 hover:border-amber-600/50 font-semibold transition flex items-center justify-center gap-2 shadow-sm">
+              <span>⚠️ Request Revision</span>
+            </button>
+            <button id="btnAdvanceStage" type="button" class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition flex items-center justify-center gap-2 shadow-md shadow-emerald-900/30">
+              <span id="btnAdvanceText">✓ Advance Stage (Approve)</span>
+            </button>
+          </div>
+
+          <!-- Optional Secondary Stage Routing (e.g. Static Sign-Off vs Optional Reel Adaptation - BUG-003) -->
+          <div id="secondaryRouteRow" class="hidden flex items-center justify-end">
+            <button id="btnSecondaryRoute" type="button" class="text-[11px] text-purple-300 hover:text-purple-200 underline font-medium transition"></button>
+          </div>
+
+          <!-- Collapsible Revision Feedback Box -->
+          <div id="revisionBox" class="hidden bg-slate-950 p-3.5 rounded-xl border border-amber-800/40 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-400">📝 Specific Revision Instructions for Agents:</span>
+              <button id="btnCancelRevision" type="button" class="text-xs text-slate-400 hover:text-white">Cancel</button>
+            </div>
+            <textarea id="revisionNotesInput" rows="3" placeholder="Explain required revisions (e.g., verify transit line, adjust Lilita One overlay caption, update food venue address)..." class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"></textarea>
+            <div class="flex items-center justify-end gap-2">
+              <button id="btnSubmitRevision" type="button" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition shadow-sm">
+                Submit Revisions &amp; Update Sheet
+              </button>
+            </div>
+          </div>
+
+          <!-- Links -->
+          <div class="flex items-center gap-3 pt-1">
+            <a id="modalAssetLink" href="#" target="_blank" rel="noopener noreferrer" class="flex-1 py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-center font-medium transition flex items-center justify-center gap-2 border border-slate-700">
+              <span id="modalAssetBtnText">Open Dedicated Drive Folder</span> ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SETTINGS & FOLDERS MODAL -->
+  <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-brand-burgundy"></span>
+          Scheduled Pipeline Hub &amp; API
+        </h3>
+        <button id="btnCloseSettings" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">✕</button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs text-slate-300">
+        <!-- Connected Scheduled Drive Folders -->
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Connected Google Drive Folders</label>
+          <div class="space-y-2">
+            <a href="https://drive.google.com/drive/folders/16lBEF71ImyRYMPbT2l0KgghxU-O8NItQ" target="_blank" class="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800 hover:border-slate-700 transition">
+              <div>
+                <p class="font-semibold text-slate-200">01-Raw Research &amp; Assets</p>
+                <p class="text-[10px] text-slate-500">Mon 3AM Content Discovery</p>
+              </div>
+              <span class="text-brand-burgundyLight font-medium">Open ↗</span>
+            </a>
+            <a href="https://drive.google.com/drive/folders/1c4ngy76T7xUJP0IT7Ogvrx45Gid8IhKe" target="_blank" class="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800 hover:border-slate-700 transition">
+              <div>
+                <p class="font-semibold text-slate-200">02-Drafts In Review</p>
+                <p class="text-[10px] text-slate-500">Tue 3AM Drafting &amp; Wed 1AM QA Audit</p>
+              </div>
+              <span class="text-brand-burgundyLight font-medium">Open ↗</span>
+            </a>
+            <a href="https://drive.google.com/drive/folders/1dICe9FWsTWSzlMjCM_G2Xs92fQndwtSh" target="_blank" class="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800 hover:border-slate-700 transition">
+              <div>
+                <p class="font-semibold text-slate-200">03-Approved for Scheduling</p>
+                <p class="text-[10px] text-slate-500">Wed 3AM Video Production &amp; Thu 3AM Final Staging</p>
+              </div>
+              <span class="text-brand-burgundyLight font-medium">Open ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Google Apps Script Live Web App URL</label>
+          <input type="url" id="apiUrlInput" value="https://script.google.com/macros/s/AKfycbxyaawKazfxDn_IzhmybCYZcY-bCqLgNWCErWdUX9NtCTCfVPYqqp1qBKpcSwhkp6Pw9Q/exec" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-brand-burgundy transition">
+        </div>
+
+        <div id="apiWriteDiagnostic" class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+          <p class="font-semibold text-slate-200">Two-Way Sync Status: <span id="apiWriteStatusText" class="text-amber-400">Checking deployment...</span></p>
+          <p id="apiWriteHelpText">Ensure you have deployed a <strong>New version</strong> in Apps Script after adding <code>updatePostStatus</code>.</p>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <button id="btnResetToSample" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition">
+            Reset Local Cache
+          </button>
+          <button id="btnSaveApiUrl" class="px-5 py-2.5 rounded-xl bg-brand-burgundy hover:bg-brand-burgundyDark text-white font-semibold shadow-md shadow-brand-burgundy/20 transition">
+            Save &amp; Sync Now
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 shadow-xl transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none">
+    <span id="toastIcon">ℹ️</span>
+    <span id="toastMessage">Action completed</span>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // Embedded baseline dataset with mapped media assets
+    const INITIAL_POSTS = [
+      {"id": "GBL-001", "targetDate": "2026-10-28", "monthKey": "2026-10", "channel": "Instagram", "pillar": "Cultural Lore", "hook": "Where CDMX buys 50 tons of cempasúchil: Mercado de Jamaica at 3 AM 🌺", "draftCopy": "¡Qué onda, chilangos! 🌼 While the rest of the city sleeps, Mercado de Jamaica comes alive in a blur of gold and copal. If you want authentic cempasúchil for your ofrenda without the tourist markup, midnight to dawn is when local floristas unload fresh harvests from Xochimilco and Puebla. Don't leave without grabbing a piping-hot atole de masa and tamal de rajas at Gate 3. ¡Una joya total! 🕯️💀 \n\n📍 Mercado de Jamaica, Guillermo Prieto 45, Jamaica\n🚇 Metro Jamaica (Lines 4 & 9)\n\n#GuidesByLocals #CDMXSecreta #MercadoDeJamaica #DiaDeMuertos #ChilangoEats #MexicoCityGuide", "visualSpecs": "Reel / Carousel 4:5 & 9:16 | Color palette: Burgundy #961145, Marigold #D4A017, Parchment #F9F6EE overlay typography | Lilita One + Nunito", "locationInfo": "Colonia Jamaica, Venustiano Carranza | Guillermo Prieto 45 | Metro Jamaica (Lines 4 & 9) | Verified 24/7 flower pavilion access & night vendor security", "qaStatus": "Approved", "qaNotes": "✓ Facts: 24-hr schedule & gate locations confirmed. ✓ Voice: Chilango slang ('qué onda', 'joya') on-brand. ✓ Alt-text & UTMs verified. Ready for scheduling.", "assetLink": "https://drive.google.com/drive/folders/1z9QJffNufWpWI0psyaUD_dZpzA4Xu_EU", "liveUrl": "—", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-002", "targetDate": "2026-11-01", "monthKey": "2026-11", "channel": "Threads", "pillar": "Neighborhood Guides", "hook": "The hidden barrio ofrendas of Coyoacán tourists always miss 🕯️", "draftCopy": "¿Ya armaron el rol por Coyoacán? Skip the crowded Jardín Centenario lines and head straight into the cobblestone alleys of Barrio de Santa Catarina. Neighborhood abuelas set up neighborhood ofrendas dedicated to local legends with pan de muerto tradicional and Mexican hot chocolate. Un plan bien chulo para la tarde. 🍫 \n\n📍 Plaza Santa Catarina, Coyoacán\n🚇 Metro Viveros / General Anaya\n\n#GuidesByLocals #CoyoacanOculto #DiaDeMuertosCDMX #BarriosMagicos #ChilangoVibes", "visualSpecs": "Photo Carousel 4:5 | Palette: Burgundy #961145, Marigold #D4A017, Pale Butter Yellow #FFF5A0 accents | High-contrast film tone", "locationInfo": "Colonia Santa Catarina, Coyoacán | Plaza Santa Catarina s/n | Metro Viveros (Line 3), Metro General Anaya (Line 2) | Verified community ofrendas open 10:00 AM – 10:00 PM during Día de Muertos", "qaStatus": "QA Passed", "qaNotes": "✓ Verified: Community ofrenda hours (10 AM–10 PM), transit stops, natural chilango voice, alt-text & tags confirmed. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1BnLFZbGayuIKeW8fsQwc20bQNQCwWpjT", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Barrio Santa Catarina Ofrendas Field Plate", "fileId": "1BjMptzZ81iaBtvQioRx9Eohym4f_0kuY", "thumbUrl": "https://lh3.googleusercontent.com/d/1BjMptzZ81iaBtvQioRx9Eohym4f_0kuY=w800", "viewUrl": "https://drive.google.com/file/d/1BjMptzZ81iaBtvQioRx9Eohym4f_0kuY/view"}},
+      {"id": "GBL-003", "targetDate": "2026-11-04", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Cultural Lore", "hook": "Why is Avenida Amsterdam an oval? The 1920s racetrack hiding in plain sight.", "draftCopy": "If you've ever gotten turned around walking down Avenida Amsterdam, blame the horses. \n\nLong before it became the leafy camellón where half of Condesa walks their dogs, this exact loop was an elite equestrian racetrack. \n\nIn 1910, the Jockey Club Mexicano built the Hipódromo de la Condesa on land that once belonged to María Magdalena Dávalos de Bracamonte y Orozco—the 18th-century Countess (Condesa) of Miravalle, whose hacienda spanned across what is now Condesa, Roma, and Tacubaya. \n\nBy 1927, the city was expanding rapidly, and architect José Luis Cuevas took on the urban plan. Instead of carving the old racetrack into a standard colonial grid, he preserved the original track’s elliptical curvature. The track became Avenida Amsterdam; the grandstands and infield transformed into Parque México (officially Parque General San Martín), complete with Leonardo Noriega and Javier Stávoli’s Art Deco pergolas and the open-air Foro Lindbergh.\n\nNext time you grab a café de olla on Michoacán or loop past the Art Deco facades on Calle Celaya, look down at the curve of the street. You’re tracing the same turn thoroughbreds made a century ago.\n\nWhat’s your favorite block of the oval to walk? Cuéntanos en los comentarios. 👇\n\n#CDMX #ColoniaCondesa #AvenidaAmsterdam #ParqueMexico #Chilango #GuidesByLocals #MexicoCityHistory #ArquitecturaCDMX", "visualSpecs": "4:5 Carousel. Burgundy (#961145) frames, Marigold Gold (#D4A017) accents, Parchment (#F9F6EE) base. 1910 racetrack overlay on Avenida Amsterdam.", "locationInfo": "Colonia Condesa, Av. Amsterdam & Parque México. Metro Chilpancingo (Line 9) / Metrobús Campeche (Line 1). Historical source: 1910 Jockey Club Mexicano & 1927 José Luis Cuevas urban plan.", "qaStatus": "Image Approved", "qaNotes": "Image approved. Queued for Wednesday 1:00 AM QA audit step.", "assetLink": "https://drive.google.com/drive/folders/1BpD03zVGuJezsLKF9sLt-UDjCZJQrtaN", "liveUrl": "", "flags": {"isApproved": false, "isQAPassed": false, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Avenida Amsterdam Hidden Racetrack Map", "fileId": "1gt1x0zEoaGCN5ED8p645dQredMy74DTP", "thumbUrl": "https://lh3.googleusercontent.com/d/1gt1x0zEoaGCN5ED8p645dQredMy74DTP=w800", "viewUrl": "https://drive.google.com/file/d/1gt1x0zEoaGCN5ED8p645dQredMy74DTP/view"}},
+      {"id": "GBL-004", "targetDate": "2026-11-20", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Neighborhood Guides", "hook": "Spending Thanksgiving in Mexico City? Where locals & expats actually book", "draftCopy": "Don't get stuck without a table! While Thanksgiving isn't a national Mexican holiday, Mexico City hosts world-class feasts for expats and visitors. Swipe through for 4 vetted spots with roast turkey, stuffing, and Mexican twists.\n\nSave this post & book by this weekend—tables go fast!\n\n#CDMXThanksgiving #MexicoCityFood #ExpatsInMexico #CDMXTravel #GuidesByLocals", "visualSpecs": "4:5 Carousel | Drive folder: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Warm culinary tones #961145 & #D4A017", "locationInfo": "Bistro 83 (San Ángel), Pinche Gringo BBQ Warehouse (Anáhuac), Rulfo at Hyatt Regency (Polanco), Four Seasons Hotel Mexico City (Juárez/Reforma) | Booking links & transit verified", "qaStatus": "QA Passed", "qaNotes": "✓ Entity correction: Replaced non-existent Fairmont Chapultepec with Four Seasons Mexico City (Reforma). Verified Pinche Gringo BBQ, Bistro 83, and Rulfo Thanksgiving menus and advance reservations. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1j8RM_SR4od4w6oznLrZS-q28XKt-11GA", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-005", "targetDate": "2026-11-24", "monthKey": "2026-11", "channel": "TikTok", "pillar": "Cultural Lore", "hook": "The exact moment November ends in CDMX, this magic happens...", "draftCopy": "Out with the cempasúchil, in with the crimson nochebuenas! Watch how our neighborhoods transition seamlessly into Christmas mode.\n\nFollow @GuidesByLocals for your ultimate winter CDMX guide.\n\n#MexicoCity #CDMX #HolidaySeason #DiaDeMuertosToNavidad #TravelMexico", "visualSpecs": "9:16 Vertical Reel (1080x1920, 20s) | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Scene 1 market transition", "locationInfo": "Paseo de la Reforma, Mercado de Jamaica | Metro Jamaica (Lines 4 & 9), Metrobús Reforma (Line 7) | Overnight installation verified", "qaStatus": "QA Passed", "qaNotes": "✓ Production package Scene 1 aligned. Mercado de Jamaica flower hall assets confirmed in folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. Ready to schedule. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1GEwSQ4WIt9CIy52Wjd2C5LVgFdqswfSI", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Mercado de Jamaica Nochebuenas Transition", "fileId": "1XXKzJsdC_780Pk8yMYH2ylwsvny-RVx_", "thumbUrl": "https://lh3.googleusercontent.com/d/1XXKzJsdC_780Pk8yMYH2ylwsvny-RVx_=w800", "viewUrl": "https://drive.google.com/file/d/1XXKzJsdC_780Pk8yMYH2ylwsvny-RVx_/view"}},
+      {"id": "GBL-006", "targetDate": "2026-12-02", "monthKey": "2026-12", "channel": "Instagram", "pillar": "Neighborhood Guides", "hook": "Miles of crimson flowers just landed on Paseo de la Reforma!", "draftCopy": "Over 200,000 Nochebuenas (poinsettias) line the center islands of Paseo de la Reforma every December. Take your morning stroll from the Angel of Independence toward Chapultepec for the most breathtaking views in the city.\n\nSave this route for your morning coffee walk!\n\n#PaseoDeLaReforma #Nochebuena #MexicoCityWalks #CDMXSecrets #WinterInMexico", "visualSpecs": "9:16 Vertical Reel (1080x1920) | Drive folder: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Pan-up morning walk footage", "locationInfo": "Paseo de la Reforma, Ángel de la Independencia, Fuente de la Diana Cazadora | Metrobús Reforma (Line 7) | Municipal botanical planting verified", "qaStatus": "QA Passed", "qaNotes": "✓ Walk route and botanical data (200,000+ flowers) fact-checked. Reel assets staged in production folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1MRPsVS78I7Hhv6eGPm14KuQDCoSzGhgl", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Paseo de la Reforma 200k Poinsettias Botanical Route", "fileId": "1u_nZdM3ocw9-5Ha3_lyWGo1wXXhgLEUW", "thumbUrl": "https://lh3.googleusercontent.com/d/1u_nZdM3ocw9-5Ha3_lyWGo1wXXhgLEUW=w800", "viewUrl": "https://drive.google.com/file/d/1u_nZdM3ocw9-5Ha3_lyWGo1wXXhgLEUW/view"}},
+      {"id": "GBL-007", "targetDate": "2026-12-05", "monthKey": "2026-12", "channel": "Instagram", "pillar": "Cultural Lore", "hook": "Why the world's most famous Christmas flower is 100% Mexican (Cuetlaxóchitl)", "draftCopy": "Before it was known as the poinsettia, the Aztecs called it Cuetlaxóchitl ('leather petal flower'). Native to Mexico, it symbolized purity and new life long before European arrival.\n\nTag someone who loves botany and cultural history!\n\n#MexicanHistory #Cuetlaxochitl #Poinsettia #CDMXCulture #LocalKnowledge", "visualSpecs": "4:5 Static Image / Graphic | Drive folder: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Botanical illustration overlay with Lilita One", "locationInfo": "Historic Center, Xochimilco chinampa growers | Metro Zócalo (Line 2), Tren Ligero Xochimilco | Indigenous botanical history cross-referenced", "qaStatus": "QA Passed", "qaNotes": "✓ Aztec etymology & Nahuatl origin cross-verified. Assets staged in folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. Final graphic proofing complete. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1Gq8tM_Dj4oYFTzew9nqGlXWfRuaYrzFV", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Cuetlaxóchitl Sacred Flower Botanical Plate", "fileId": "1fEllD4Up7srXFpEkJV573qJ3GHZwWtvt", "thumbUrl": "https://lh3.googleusercontent.com/d/1fEllD4Up7srXFpEkJV573qJ3GHZwWtvt=w800", "viewUrl": "https://drive.google.com/file/d/1fEllD4Up7srXFpEkJV573qJ3GHZwWtvt/view"}},
+      {"id": "GBL-008", "targetDate": "2026-12-09", "monthKey": "2026-12", "channel": "TikTok", "pillar": "Neighborhood Guides", "hook": "Skip the shopping mall: here's where real Mexico City gets festive after dark", "draftCopy": "When twilight hits, traditional mercados burst with handmade piñatas, twinkling canopy lights, and the scent of pine and cinnamon. Experience the real holiday magic at our favorite night markets.\n\nWhich market are you visiting first? Drop a comment!\n\n#MercadosNavideños #CDMXMarkets #MercadoJamaica #MexicoCityVibes #ChristmasLights", "visualSpecs": "9:16 Vertical Reel (1080x1920) | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Night market canopy lights & piñatas", "locationInfo": "Mercado de Jamaica, Mercado Río Blanco, Mercado Coyoacán, Zócalo illuminated facades | Metro Jamaica & Coyoacán | Evening hours verified", "qaStatus": "QA Passed", "qaNotes": "✓ Aligned with Scene 2 & 3 of Christmas Reel package. Market hours and evening illumination verified. Assets staged in folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1xeTkQxE6cprbbweH-qVxZQ6DIO74u0_R", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-009", "targetDate": "2026-12-12", "monthKey": "2026-12", "channel": "Instagram", "pillar": "Neighborhood Guides", "hook": "Our curated neighborhood guide to CDMX holiday markets (4 Must-Visit Mercados)", "draftCopy": "Swipe through for our 4 top picks for piñatas, artisanal nativity figures, seasonal produce, and sparkling canopy lights. Slide 1: Mercado Jamaica, Slide 2: Mercado Río Blanco, Slide 3: Mercado Coyoacán, Slide 4: San Juan Pugibet.\n\nSave this carousel to your holiday itinerary!\n\n#CDMXGuide #MercadoNavideño #ShopLocalCDMX #MexicanCrafts #CDMXEats", "visualSpecs": "4:5 Carousel (4 slides) | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Map pins & market stalls layout", "locationInfo": "Mercado de Jamaica, Mercado Río Blanco, Mercado Coyoacán, Mercado San Juan | Metro San Juan de Letrán & Metro Jamaica | Stalls verified", "qaStatus": "QA Passed", "qaNotes": "✓ Market vendor directory verified. Carousel slide assets staged in Drive folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. Layout review complete. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1G9lwIbUL6MnDK2nXF-rqTsceUAz4qfu0", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-010", "targetDate": "2026-12-16", "monthKey": "2026-12", "channel": "TikTok", "pillar": "Cultural Lore", "hook": "This Mexican Christmas play is NOT what you expect... (What is a Pastorela?)", "draftCopy": "Today kicks off Las Posadas (Dec 16-24)! A Pastorela is a traditional Christmas play depicting shepherds traveling to Bethlehem—packed with comedy, cheeky devils, angels, and biting political satire.\n\nHave you ever seen a live Pastorela? Tell us below!\n\n#Pastorelas #PosadasNavideñas #MexicanTraditions #CDMXEvents #CultureTrip", "visualSpecs": "9:16 Vertical Reel (1080x1920) | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Scene 3 Posadas & Piñata push-in", "locationInfo": "Ex-Convento de Tepotzotlán, Teatro Coyoacán, Zócalo | Seasonal performance schedules & ticket details cross-referenced", "qaStatus": "QA Passed", "qaNotes": "✓ Scene 3 script & audio cues (festive street chant SFX) verified against production package. Staged in folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1tIAfipOkvHA7SsX3b1J-mw9a_g2Go0hr", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-011", "targetDate": "2026-12-18", "monthKey": "2026-12", "channel": "Instagram", "pillar": "Street Food", "hook": "That sound right there? That's how you know it's Christmas in CDMX (Street Buñuelos)", "draftCopy": "Look out for street carts frying fresh buñuelos! These giant, paper-thin, crispy fried dough disks are either dusted in cinnamon sugar or drizzled with warm, spiced piloncillo syrup infused with guava and star anise.\n\nGrab our neighborhood sweet treats map in bio!\n\n#Buñuelos #CDMXStreetFood #MexicanDesserts #DulcesMexicanos #Antojitos", "visualSpecs": "9:16 Vertical Reel (1080x1920) | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Close-up frying sizzle ASMR & sugar dusting", "locationInfo": "Plazas in Coyoacán (Jardín Hidalgo), Santa María la Ribera, Tlatelolco, San Ángel | Metro Viveros & San Cosme | Vendor hours verified", "qaStatus": "QA Passed", "qaNotes": "✓ Production package Scene 4 alignment: Buñuelos and ponche romerías in Coyoacán confirmed. Video assets staged in folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1HUCysqOxJZJ3-5icAqTMYnxSGyoCU93U", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Buñuelos Callejeros Coyoacán Food Plate", "fileId": "1Jt8CQGE6K4pI5VRd6DjvWC-SAXmA060h", "thumbUrl": "https://lh3.googleusercontent.com/d/1Jt8CQGE6K4pI5VRd6DjvWC-SAXmA060h=w800", "viewUrl": "https://drive.google.com/file/d/1Jt8CQGE6K4pI5VRd6DjvWC-SAXmA060h/view"}},
+      {"id": "GBL-012", "targetDate": "2026-12-21", "monthKey": "2026-12", "channel": "Instagram", "pillar": "Street Food", "hook": "What actually goes into an authentic clay pot of Mexican Ponche Navideño?", "draftCopy": "Teaming with tejocotes, guayaba, caña de azúcar, tamarindo, flor de jamaica, and canela. It fills every home and street market with warmth. And for the adults: don't forget the 'piquete' (a splash of mezcal or rum)!\n\nBookmark this breakdown for when you order at the markets!\n\n#PoncheNavideño #Posadas #MexicanDrink #WinterWarmth #CDMXWinter", "visualSpecs": "4:5 Carousel / Reel | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Steaming clay jarrito visuals & ingredient infographic", "locationInfo": "Café El Jarocho, Traditional street fondas in Narvarte & Roma | Metro División del Norte / Chilpancingo | Ingredient sourcing verified", "qaStatus": "QA Passed", "qaNotes": "✓ Scene 4 production specs matched (steaming ponche in Coyoacán). Ingredients (tejocote, piloncillo, canela) verified. Staged in production folder. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/13i81dnjNvXaCcVMQ9q9n4soyfcXMjOk_", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Coyoacán Ponche Navideño Clay Jarrito Plate", "fileId": "1BCB9cNO33gqRxVkKPh4VS8fwUsQE4mQf", "thumbUrl": "https://lh3.googleusercontent.com/d/1BCB9cNO33gqRxVkKPh4VS8fwUsQE4mQf=w800", "viewUrl": "https://drive.google.com/file/d/1BCB9cNO33gqRxVkKPh4VS8fwUsQE4mQf/view"}},
+      {"id": "GBL-013", "targetDate": "2026-12-23", "monthKey": "2026-12", "channel": "TikTok", "pillar": "Cultural Lore", "hook": "In Mexico, Christmas is on December 24th, NOT the 25th! (Dec 24 vs Dec 25)", "draftCopy": "For our US and Canadian friends waiting for Dec 25th or Boxing Day: in Mexico, the entire celebration happens on Nochebuena (Dec 24). Midnight feast, opening presents at 12 AM, and non-stop family toasts. On Dec 25th? The city sleeps!\n\nShare this with a traveler visiting Mexico for the holidays!\n\n#Nochebuena #MexicanChristmas #CulturalDifferences #ExpatsInCDMX #TravelTips", "visualSpecs": "9:16 Vertical Reel (1080x1920) | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Side-by-side split screen comparison", "locationInfo": "Mexico City barrios, local neighborhoods across Cuauhtémoc & Benito Juárez | Transit schedules & store holiday hours verified", "qaStatus": "QA Passed", "qaNotes": "✓ Cultural explainer copy approved. Dual-language voiceover script reviewed. Asset staged in Drive folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1Apz_0jsrQqmpjctpKhlM09_Prs9rFT8J", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-014", "targetDate": "2026-12-24", "monthKey": "2026-12", "channel": "Instagram", "pillar": "Cultural Lore", "hook": "What makes a true CDMX Christmas Eve dinner table? (Traditional Nochebuena Feast)", "draftCopy": "Tonight is Nochebuena! Here is what's simmering in Mexican kitchens today: Bacalao a la Vizcaína, Romeritos con Mole y tortitas de camarón, Pavo relleno or Pierna adobada, and Ensalada de Nochebuena with beets and pomegranate.\n\n¡Feliz Nochebuena from Guides by Locals! What is your family serving tonight?\n\n#NochebuenaDinner #Romeritos #Bacalao #MexicanGastronomy #FelizNavidad", "visualSpecs": "4:5 Multi-dish flatlay / Static Graphic | Drive folder: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Burgundy & gold branding", "locationInfo": "Traditional panaderías and CDMX family kitchens | Historic center & neighborhood markets | Menu ingredients verified", "qaStatus": "QA Passed", "qaNotes": "✓ Traditional recipe items (bacalao, romeritos, pierna) verified. Assets staged in folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. Final graphic proofing complete. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1sDbEa7pFIkh7E7MGFWf6bA6vimnZf_eE", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-015", "targetDate": "2026-12-25", "monthKey": "2026-12", "channel": "Instagram", "pillar": "Cultural Lore", "hook": "Everyone knows the food tastes 10x better the day after Christmas (El Recalentado)", "draftCopy": "Christmas Day in Mexico has one unwritten rule: El Recalentado. The entire family gathers around the kitchen for tortas de bacalao and reheated romeritos. No cooking, zero stress, pure cozy vibes.\n\nTeam Torta de Bacalao or Team Torta de Romeritos? Let us know!\n\n#ElRecalentado #RecalentadoNavideño #CDMXTraditions #MexicanComfortFood #BoxingDay", "visualSpecs": "9:16 Vertical Reel (1080x1920) | Assets in Drive: 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo | Warm casual kitchen morning b-roll", "locationInfo": "Local neighborhoods across CDMX | Public transit holiday schedules (Metro & Metrobús) verified", "qaStatus": "QA Passed", "qaNotes": "✓ Chilango brand tone ('El Recalentado', 'tortas de bacalao') approved. Assets staged in folder 1Ow6_1jUz7_XQmjtm3UCKiyZEG3Fwd8Yo. QA Passed.", "assetLink": "https://drive.google.com/drive/folders/1zOG71Gjs-MOROAEOg9jIxZkeL6vhNRYy", "liveUrl": "—", "flags": {"isApproved": false, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "El Recalentado Navideño Cozy Kitchen Plate", "fileId": "1MY5mdiSgODQH25Ko5IfyiRjvY2wMGXE5", "thumbUrl": "https://lh3.googleusercontent.com/d/1MY5mdiSgODQH25Ko5IfyiRjvY2wMGXE5=w800", "viewUrl": "https://drive.google.com/file/d/1MY5mdiSgODQH25Ko5IfyiRjvY2wMGXE5/view"}},
+      {"id": "GBL-016", "targetDate": "2026-11-10", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Neighborhood Guides", "hook": "Why Mexico City's most ornate Moorish pavilion was built in New Orleans, not CDMX (Santa María la Ribera Kiosco Morisco loop).", "draftCopy": "If you walk into the Alameda of Santa María la Ribera on a Sunday, the first thing that hits you isn't just the smell of Russian pastries or street esquites—it's an intricate Moorish palace sitting in the center of the trees.\n\nThis is the Kiosco Morisco, designed in 1884 by Mexican engineer José Ramón Ibarrola. But it wasn't built for CDMX.\n\nIt was cast entirely out of wrought iron in Pittsburgh to represent Mexico at the 1884 World's Industrial and Cotton Centennial Exposition in New Orleans. When the fair wrapped, it traveled to St. Louis, made its way to Mexico City’s Alameda Central, and finally moved to its permanent home in Santa María la Ribera in 1910 to make room for the Juárez Hemiciclo.\n\nToday, Santa María is one of the capital's oldest residential colonias, preserving 19th-century porfirian casonas and neighbor-first rhythm.\n\nOur perfect Sunday afternoon loop:\n1. Start at the Kiosco Morisco on Jaime Torres Bodet.\n2. Grab a slice of medovik honey cake across the park at Kolobok.\n3. End with Sicilian pasta in the garden courtyard of María Ciento38.\n\nSave this field guide for your next quiet Sunday stroll. 🗺️\n\n#CDMX #SantaMariaLaRibera #KioscoMorisco #MexicoCityArchitecture #GuidesByLocals #Chilango", "visualSpecs": "4:5 Field-Guide Carousel. Cover: Architectural linework of Kiosco Morisco arches in Deep Burgundy (#961145) and Marigold Gold (#D4A017) on light parchment (#F9F6EE). Inner slides: 3-stop neighborhood walking map. Alt-text: \"Intricate architectural field-guide plate illustrating the Moorish arches and geometric iron dome of Kiosco Morisco in Santa María la Ribera.\"", "locationInfo": "Colonia Santa María la Ribera, Jaime Torres Bodet 152. Metro San Cosme / Buenavista.", "qaStatus": "Image Approved", "qaNotes": "Image approved. Queued for Wednesday 1:00 AM QA audit step.", "assetLink": "https://drive.google.com/drive/folders/1hHcRZTPNWbOO3iCGPl8e6IalRbDgk_dE", "liveUrl": "", "flags": {"isApproved": false, "isQAPassed": false, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Kiosco Morisco Santa María la Ribera Cover Plate", "fileId": "1IDHbiP6JN2qh3qvt_lv1zAHigYsIr-Rn", "thumbUrl": "https://lh3.googleusercontent.com/d/1IDHbiP6JN2qh3qvt_lv1zAHigYsIr-Rn=w800", "viewUrl": "https://drive.google.com/file/d/1IDHbiP6JN2qh3qvt_lv1zAHigYsIr-Rn/view"}},
+      {"id": "GBL-017", "targetDate": "2026-11-12", "monthKey": "2026-11", "channel": "TikTok", "pillar": "Cultural Lore", "hook": "In Colonia San Rafael, you don't order food at a traditional cantina—you order 3 chelas and wait for the botana.", "draftCopy": "POV: You sat down at a traditional cantina in San Rafael, ordered a cold Victoria, and the waiter just brought out a 4-course meal for free. 🍺\n\nWelcome to the art of the traditional Chilango botana.\n\nIn the 1940s and 50s, San Rafael was the 'Broadway Mexicano,' bustling with theater actors and stage crews spilling into cantinas between rehearsals. The deal then—as it is now in authentic neighborhood joints—is simple: as long as you're ordering drinks, the kitchen keeps sending food.\n\nRound 1: Caldo de camarón to wake up your palate.\nRound 2: Tacos de carnitas or albóndigas en chipotle.\nRound 3: Chamorro or mole con pollo.\n\nNo menus. No tourist pricing. Just vecindad hospitality that’s stood for over 70 years.\n\nTag the friend who needs a real cantina afternoon in CDMX. 👇\n\n#CDMX #ColoniaSanRafael #CantinasCDMX #StreetFoodMexico #Chilango #GuidesByLocals", "visualSpecs": "9:16 Vertical Video (20s). Fast-paced cut with on-screen text overlays in Lilita One, vintage cantina tile backgrounds, and ambient clinking glass audio cues. Alt-text: \"Fast-paced vertical reel showing steamy broth in a clay bowl, savory cantina plates, and vintage wood-paneled walls in a historic Colonia San Rafael establishment.\"", "locationInfo": "Colonia San Rafael. Metro San Rafael / Metrobús Plaza de la República.", "qaStatus": "Approved", "qaNotes": "QA Passed (Nov 4, 2026). Facts verified (1940s Broadway Mexicano theater district, free 4-course botana tradition, Metro San Cosme / Metrobús Plaza de la República). English VO script with authentic cultural terms (botana, chelas, caldo de camarón, chamorro). Proper accents. Dedicated folder contains Production Brief & Script Doc and 9:16 video specs. | Final staging approved in chat on Nov 9, 2026. Folder moved to 03-Approved for Scheduling.", "assetLink": "https://drive.google.com/drive/folders/1tT-uivlyFFJIBuvPH3CanOm5Nz1vUn3d", "liveUrl": "", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": {"type": "video", "title": "San Rafael Cantina Botana Reel", "fileId": "1oCjVDMxsLvjQXON6Fe6mOtNo1Qg6989O", "embedUrl": "https://drive.google.com/file/d/1oCjVDMxsLvjQXON6Fe6mOtNo1Qg6989O/preview", "viewUrl": "https://drive.google.com/file/d/1oCjVDMxsLvjQXON6Fe6mOtNo1Qg6989O/view"}},
+      {"id": "GBL-018", "targetDate": "2026-11-15", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Street Food", "hook": "Forget the lines in Roma: the real Chilango taco crawl is happening down Calle José Martí in Escandón.", "draftCopy": "Everyone crosses Insurgentes into Roma Norte for lunch, but vecinos in the know head the opposite direction into Colonia Escandón.\n\nQuiet, tree-lined, and blissfully free of hype queues, Calle José Martí holds some of the most consistent, generational street food in the city.\n\nHere is your 3-stop taco crawl down Martí:\n\n1. Taquería El Paisa: Order the suadero with crispy golden edges and plenty of cilantro. Watch the taquero chop it rhythmically on the tronco.\n2. Rincón Tarasco (José Martí 142): Michoacán-style carnitas that sell out by 2:00 PM. Ask for 'maciza con cuerito' and a splash of their pickled habanero salsa.\n3. Tacos de Guisado Martí: Simmering clay cazuelas filled with chicharrón prensado, tinga de pollo, and creamy rajas con crema.\n\nWhich taco are you hitting first? 🌮\n\n#CDMX #ColoniaEscandon #TacosCDMX #StreetFoodCDMX #Taquerias #Chilango #GuidesByLocals", "visualSpecs": "4:5 Food Field Guide Plate. Deep Burgundy (#961145) header container, Magenta (#C4357A) food badges, and hand-annotated street map layout of Calle José Martí. Alt-text: \"Editorial street food field guide illustrating Calle José Martí in Colonia Escandón with 3 annotated taquería pins and clay cazuela icons.\"", "locationInfo": "Colonia Escandón I Sección, Calle José Martí. Metro Patriotismo / Metrobús Escandón.", "qaStatus": "Image Approved", "qaNotes": "Image approved. Queued for Wednesday 1:00 AM QA audit step.", "assetLink": "https://drive.google.com/drive/folders/1AcpOvuMqg7vfwT6J1XDfaY9VD2YVK7pI", "liveUrl": "", "flags": {"isApproved": false, "isQAPassed": false, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "Calle José Martí Escandón Taco Crawl Map Plate", "fileId": "1eNvXOZVSyO67rkI2bbTPqWycWvEgPoh_", "thumbUrl": "https://lh3.googleusercontent.com/d/1eNvXOZVSyO67rkI2bbTPqWycWvEgPoh_=w800", "viewUrl": "https://drive.google.com/file/d/1eNvXOZVSyO67rkI2bbTPqWycWvEgPoh_/view"}},
+      {"id": "GBL-019", "targetDate": "2026-11-17", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Maps", "hook": "You drive over a 700-year-old Aztec lake dike every single day on Calzada México-Tacuba.", "draftCopy": "When Spanish cartographers drew the first maps of Mexico City in 1524, they didn't invent the street grid. They just paved over the water.\n\nBefore cars, asphalt, and metro trains, the island capital of Mexico-Tenochtitlan was connected to the mainland by three monumental raised causeways (albarradones) cutting directly across Lake Texcoco.\n\nToday, you trace those exact same lake paths on your daily commute:\n\n• Calzada México-Tacuba: The oldest continuously used road in the Americas, built in the 1300s to link Tenochtitlan to the kingdom of Tlacopan.\n• Calzada de Tlalpan: The southern causeway where Hernán Cortés and Moctezuma II first came face-to-face in November 1519.\n• Calzada de los Misterios: The northern path that led to the sacred shrine of Tonantzin at Tepeyac.\n\nNext time you're stuck in traffic on Tacuba, remember: you're sitting atop a 700-year-old engineering marvel.\n\nGrab our Tenochtitlan 1500 historical overlay map at the link in bio. 🗺️\n\n#Tenochtitlan #CDMX #HistoriaCDMX #Cartografia #MexicoCityHistory #GuidesByLocals #Arqueologia", "visualSpecs": "4:5 Cartographic Field Plate. Archival 1524 Cortés map overlay blended onto modern CDMX street lines. Deep Burgundy border (#961145), Marigold causeway highlights (#D4A017), Parchment paper texture (#F9F6EE). Alt-text: \"High-contrast architectural cartography plate showing ancient Lake Texcoco with the 3 primary Aztec causeways glowing in gold over the modern street grid of Mexico City.\"", "locationInfo": "Calzada México-Tacuba, Metro Tacuba / San Cosme / Allendale. INAH cartographic archives.", "qaStatus": "Image Approved", "qaNotes": "Image approved. Queued for Wednesday 1:00 AM QA audit step.", "assetLink": "https://drive.google.com/drive/folders/1FW9Af3rOY66NXl6NBGw1o6prjc851oUe", "liveUrl": "", "flags": {"isApproved": false, "isQAPassed": false, "hasAssetLink": true, "isPublished": false}, "media": {"type": "image", "title": "The Aztec Lake Causeways 1500 Tenochtitlan Map Plate", "fileId": "1MpfMa-WfL06A_hHu0ovmUA8pF2FD3-Yn", "thumbUrl": "https://lh3.googleusercontent.com/d/1MpfMa-WfL06A_hHu0ovmUA8pF2FD3-Yn=w800", "viewUrl": "https://drive.google.com/file/d/1MpfMa-WfL06A_hHu0ovmUA8pF2FD3-Yn/view"}},
+      {"id": "GBL-020", "targetDate": "2026-11-19", "monthKey": "2026-11", "channel": "Threads", "pillar": "Neighborhood Guides", "hook": "The secret to Coyoacán isn't fighting the crowds at Plaza Hidalgo—it's turning left onto Calle Francisco Sosa.", "draftCopy": "The biggest mistake visitors make in Coyoacán is staying clustered around the churro lines at Plaza Hidalgo.\n\nIf you want the soul of the neighborhood, walk west onto Calle Francisco Sosa into Barrio de Santa Catarina.\n\nThis 450-year-old royal road is paved in uneven volcanic cobblestones, shaded by ancient ash trees, and lined with high ocre and terracotta walls that hide centuries of literary history.\n\nThree stops to make:\n1. Fonoteca Nacional (Casa de Alvarado): Former home of Nobel laureate Octavio Paz. Free entry to lush acoustic gardens where hidden speakers play archival recordings of Mexican bird songs and historic poetry.\n2. Plaza Santa Catarina: A serene stone plaza anchored by a tiny 16th-century yellow chapel and zero commercial noise.\n3. El Jarocho's side window: Skip the main branch line and order your café de olla and pan dulce here.\n\nHave you explored Santa Catarina? ☕\n\n#Coyoacan #CDMX #BarrioDeSantaCatarina #OctavioPaz #Chilango #GuidesByLocals", "visualSpecs": "Threads carousel / text post accompanied by 3 warm golden-hour architectural frames featuring ocre walls, volcanic stone paths, and Fonoteca courtyards. Alt-text: \"Sunlit cobblestone street along Calle Francisco Sosa in Coyoacán with historic yellow colonial walls and overarching ash trees.\"", "locationInfo": "Barrio de Santa Catarina, Calle Francisco Sosa, Coyoacán. Metro Viveros.", "qaStatus": "Approved", "qaNotes": "QA Passed (Nov 4, 2026). Facts verified (Calle Francisco Sosa, Barrio de Santa Catarina, Fonoteca Nacional at Casa de Alvarado / Octavio Paz, Plaza Santa Catarina, Metro Viveros). English thread with authentic terms (barrio, café de olla). Flawless accents (Coyoacán, Octavio Paz). Dedicated folder contains Production Brief Doc, visual frame specs, alt-text, and UTM link. | Final staging approved in chat on Nov 9, 2026. Folder moved to 03-Approved for Scheduling.", "assetLink": "https://drive.google.com/drive/folders/1tw-0qE8bXtmNIs9zcp8aZS5UdCHmWJsm", "liveUrl": "", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-021", "targetDate": "2026-11-23", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Neighborhood Guides", "hook": "Skip the Saturday crowds at Bazar Sábado—the real magic of San Ángel is hiding two blocks away in Chimalistac.", "draftCopy": "Pending drafting by agent. Focus: 17th-century colonial stone bridges over the dried Río Magdalena, cobblestone alleys of Chimalistac, Plaza Federico Gamboa, Carmelite orchards, and peaceful historic casonas.", "visualSpecs": "4:5 Field-Guide Carousel. Deep Burgundy (#961145) frames, Marigold Gold (#D4A017) pin accents, aged parchment background (#F9F6EE).", "locationInfo": "Colonia San Ángel & Chimalistac. Metro Miguel Ángel de Quevedo / Metrobús La Bombilla.", "qaStatus": "Idea", "qaNotes": "Approved in chat by user on Nov 9, 2026. Ready for batch drafting.", "assetLink": "https://drive.google.com/drive/folders/16lBEF71ImyRYMPbT2l0KgghxU-O8NItQ", "liveUrl": "", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-022", "targetDate": "2026-11-25", "monthKey": "2026-11", "channel": "TikTok", "pillar": "Cultural Lore", "hook": "Before mezcal bars and craft breweries, Mexico City ran on a thick fermented cactus sap called pulque.", "draftCopy": "Pending drafting by agent. Focus: Centuries-old pulquería traditions, tinacales, sawdust floors, seasonal curados (apio, guayaba, avena), free botana culture, and historic spots like Pulquería Las Duelistas (est. 1912 on Calle Aranda).", "visualSpecs": "9:16 Vertical Video (20s). Dynamic pour visuals, colorful Mexican mural backdrops, and authentic ambient cantina sound.", "locationInfo": "Pulquería Las Duelistas, Calle Aranda 28, Centro Histórico. Metro Salto del Agua / San Juan de Letrán.", "qaStatus": "Idea", "qaNotes": "Approved in chat by user on Nov 9, 2026. Ready for batch drafting.", "assetLink": "https://drive.google.com/drive/folders/16lBEF71ImyRYMPbT2l0KgghxU-O8NItQ", "liveUrl": "", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-023", "targetDate": "2026-11-27", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Street Food", "hook": "Two blocks south of Bellas Artes lies the most underrated culinary block in Centro: Calle de López.", "draftCopy": "Pending drafting by agent. Focus: The street food gauntlet of Calle de López—crispy seafood tostadas, deep-fried quesadillas de tinga, and sweet pan dulce from Panadería La Vasconia (est. 1870, the oldest bakery in CDMX).", "visualSpecs": "4:5 Food Field Guide Plate. Deep Burgundy (#961145) header container, Magenta (#C4357A) food badges, and hand-annotated street map layout.", "locationInfo": "Calle de López, Centro Histórico. Metro San Juan de Letrán / Bellas Artes.", "qaStatus": "Idea", "qaNotes": "Approved in chat by user on Nov 9, 2026. Ready for batch drafting.", "assetLink": "https://drive.google.com/drive/folders/16lBEF71ImyRYMPbT2l0KgghxU-O8NItQ", "liveUrl": "", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-024", "targetDate": "2026-11-30", "monthKey": "2026-11", "channel": "Instagram", "pillar": "Maps", "hook": "A single volcanic eruption 1,700 years ago shaped the modern architecture of South Mexico City.", "draftCopy": "Pending drafting by agent. Focus: Xitle volcano eruption burying the ancient circular pyramid of Cuicuilco in basalt lava, giving rise to El Pedregal and inspiring Luis Barragán and Diego Rivera’s modernist volcanic stone architecture in the 1950s.", "visualSpecs": "4:5 Cartographic Field Plate. Archival volcanic lava flow boundary map overlaid on modern UNAM and Jardines del Pedregal street layouts.", "locationInfo": "Zona Arqueológica de Cuicuilco & Jardines del Pedregal. Metrobús Villa Olímpica.", "qaStatus": "Idea", "qaNotes": "Approved in chat by user on Nov 9, 2026. Ready for batch drafting.", "assetLink": "https://drive.google.com/drive/folders/16lBEF71ImyRYMPbT2l0KgghxU-O8NItQ", "liveUrl": "", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null},
+      {"id": "GBL-025", "targetDate": "2026-12-03", "monthKey": "2026-12", "channel": "Threads", "pillar": "Neighborhood Guides", "hook": "You can drive 30 minutes south of Condesa and land in an 18th-century mountain village that feels 200 miles away from CDMX.", "draftCopy": "Pending drafting by agent. Focus: The historic center of Tlalpan (formerly San Agustín de las Cuevas)—peaceful cobblestone alleys, 16th-century Parroquia de San Pedro Apóstol, quiet shaded portals, Mercado de Tlalpan, and the authentic origins of caldo tlalpeño.", "visualSpecs": "Conversational text thread accompanied by 3 warm golden-hour architectural frames featuring cobblestone streets, colonial arches, and the municipal plaza.", "locationInfo": "Centro de Tlalpan, Plaza de la Constitución. Metrobús Fuentes Brotantes.", "qaStatus": "Idea", "qaNotes": "Approved in chat by user on Nov 9, 2026. Ready for batch drafting.", "assetLink": "https://drive.google.com/drive/folders/16lBEF71ImyRYMPbT2l0KgghxU-O8NItQ", "liveUrl": "", "flags": {"isApproved": true, "isQAPassed": true, "hasAssetLink": true, "isPublished": false}, "media": null}
+    ];
+
+    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbxyaawKazfxDn_IzhmybCYZcY-bCqLgNWCErWdUX9NtCTCfVPYqqp1qBKpcSwhkp6Pw9Q/exec";
+    const STORAGE_KEY_API_URL = 'gbl_dashboard_api_url';
+    const STORAGE_KEY_POSTS = 'gbl_dashboard_posts_cache_v5';
+
+    // HTML Sanitizer (Fix for BUG-008)
+    function escapeHTML(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Two-tier Drive thumbnail loader (Fix for BUG-005)
+    window.handleDriveImgError = function(imgEl, fileId) {
+      if (fileId && !imgEl.dataset.fallbackTried) {
+        imgEl.dataset.fallbackTried = '1';
+        imgEl.src = 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(fileId) + '&sz=w1000';
+      } else {
+        imgEl.classList.add('hidden');
+        if (imgEl.nextElementSibling) {
+          imgEl.nextElementSibling.classList.remove('hidden');
+        }
+      }
+    };
+
+    // Client-side Drive file ID parser for newly added sheet rows (Fix for BUG-002)
+    function extractClientDriveMedia(post) {
+      if (post.media && post.media.fileId) return post.media;
+      const candidateUrls = [post.previewUrl, post.assetLink].filter(Boolean);
+      for (const raw of candidateUrls) {
+        const str = String(raw);
+        const fileMatch = str.match(/\/file\/d\/([a-zA-Z0-9_-]{15,})/) ||
+                          str.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]{15,})/) ||
+                          str.match(/[?&]id=([a-zA-Z0-9_-]{15,})/);
+        if (fileMatch && !str.includes('/folders/')) {
+          const fileId = fileMatch[1];
+          const specs = ((post.visualSpecs || '') + ' ' + (post.channel || '')).toLowerCase();
+          const isVideo = specs.includes('9:16') || specs.includes('reel') || specs.includes('video') || specs.includes('tiktok');
+          return {
+            type: isVideo ? 'video' : 'image',
+            title: post.hook || `${post.id} Asset`,
+            fileId: fileId,
+            thumbUrl: `https://lh3.googleusercontent.com/d/${fileId}=w800`,
+            embedUrl: `https://drive.google.com/file/d/${fileId}/preview`,
+            viewUrl: `https://drive.google.com/file/d/${fileId}/view`
+          };
+        }
+      }
+      return post.media || null;
+    }
+
+    // Unified Stage State inference matching Code.gs (Fix for BUG-006)
+    function inferClientStageState(post) {
+      if (post.stageState && post.stageState.trim()) return post.stageState.trim();
+      const s = (post.qaStatus || '').toLowerCase().trim();
+      const copy = (post.draftCopy || '').toLowerCase();
+      if (['approved', 'scheduled', 'live', 'published'].includes(s)) return 'Staged & Ready';
+      if (s === 'revision needed') return 'Queued for Agent';
+      if (s === 'drafted' && copy.includes('pending drafting')) return 'Queued for Agent';
+      return 'Ready for Review';
+    }
+
+    function loadInitialPosts() {
+      try {
+        const cached = localStorage.getItem(STORAGE_KEY_POSTS);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map(p => ({
+              ...p,
+              media: extractClientDriveMedia(p),
+              stageState: inferClientStageState(p)
+            }));
+          }
+        }
+      } catch (e) {}
+      return INITIAL_POSTS.map(p => ({
+        ...p,
+        media: extractClientDriveMedia(p),
+        stageState: inferClientStageState(p)
+      }));
+    }
+
+    function savePostsLocally(data) {
+      try {
+        localStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    let posts = loadInitialPosts();
+    let filteredPosts = [...posts];
+    let activeView = 'kanban';
+    let charts = {};
+    let backendSupportsWrite = false;
+
+    const searchInput = document.getElementById('searchInput');
+    const btnClearSearch = document.getElementById('btnClearSearch');
+    const filterStage = document.getElementById('filterStage');
+    const filterReviewState = document.getElementById('filterReviewState');
+    const filterChannel = document.getElementById('filterChannel');
+    const filterPillar = document.getElementById('filterPillar');
+    const filterMedia = document.getElementById('filterMedia');
+    const btnResetFilters = document.getElementById('btnResetFilters');
+
+    const tabKanban = document.getElementById('tabKanban');
+    const tabGallery = document.getElementById('tabGallery');
+    const tabTable = document.getElementById('tabTable');
+    const tabTimeline = document.getElementById('tabTimeline');
+    const tabAnalytics = document.getElementById('tabAnalytics');
+
+    const viewKanban = document.getElementById('viewKanban');
+    const viewGallery = document.getElementById('viewGallery');
+    const viewTable = document.getElementById('viewTable');
+    const viewTimeline = document.getElementById('viewTimeline');
+    const viewAnalytics = document.getElementById('viewAnalytics');
+
+    const postModal = document.getElementById('postModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const btnCopyCaption = document.getElementById('btnCopyCaption');
+
+    const settingsModal = document.getElementById('settingsModal');
+    const btnOpenSettings = document.getElementById('btnOpenSettings');
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const btnSaveApiUrl = document.getElementById('btnSaveApiUrl');
+    const btnResetToSample = document.getElementById('btnResetToSample');
+    const apiUrlInput = document.getElementById('apiUrlInput');
+    const btnSyncNow = document.getElementById('btnSyncNow');
+
+    const scheduleBanner = document.getElementById('scheduleBanner');
+    const btnToggleSchedule = document.getElementById('btnToggleSchedule');
+    const btnOpenSchedule = document.getElementById('btnOpenSchedule');
+
+    btnToggleSchedule.addEventListener('click', () => scheduleBanner.classList.add('hidden'));
+    btnOpenSchedule.addEventListener('click', () => scheduleBanner.classList.remove('hidden'));
+
+    function showToast(message, icon = '✓') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+      toastMessage.textContent = message;
+      toastIcon.textContent = icon;
+      toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+      }, 3400);
+    }
+
+    function updateKPIs() {
+      const total = posts.length;
+      let approved = 0;
+      let readyReview = 0;
+      let queuedAgent = 0;
+      let mediaCount = 0;
+
+      posts.forEach(p => {
+        const s = (p.qaStatus || '').toLowerCase();
+        const state = inferClientStageState(p);
+        if (s === 'approved') approved++;
+        if (state === 'Ready for Review') readyReview++;
+        else if (state === 'Queued for Agent') queuedAgent++;
+
+        if (p.media) mediaCount++;
+      });
+
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiApproved').textContent = approved;
+      document.getElementById('kpiReadyReview').textContent = readyReview;
+      document.getElementById('kpiQueuedAgent').textContent = queuedAgent;
+      document.getElementById('kpiMediaCount').textContent = mediaCount;
+
+      const rate = total > 0 ? Math.round((approved / total) * 100) : 0;
+      document.getElementById('kpiReadiness').textContent = `${rate}%`;
+
+      document.getElementById('totalItemsCount').textContent = total;
+      document.getElementById('filteredCount').textContent = filteredPosts.length;
+      document.getElementById('galleryCountBadge').textContent = `${mediaCount} Assets Available`;
+    }
+
+    function getStageStateBadge(stageState, lastMovedAt = '', isPendingSync = false) {
+      const state = (stageState || '').toLowerCase();
+      const syncTag = isPendingSync ? ' • Unsynced' : '';
+      if (state === 'queued for agent') {
+        const timeTag = lastMovedAt ? ` • ${escapeHTML(lastMovedAt)}` : '';
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">⏳ Just Moved${timeTag}${syncTag}</span>`;
+      }
+      if (state === 'staged & ready') {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">✅ Staged${syncTag}</span>`;
+      }
+      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">👀 Ready for Review${syncTag}</span>`;
+    }
+
+    function getStatusBadge(status) {
+      const s = (status || '').toLowerCase();
+      if (s === 'approved') {
+        return `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Thu 3AM: Approved</span>`;
+      } else if (s === 'qa passed') {
+        return `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">Wed 1AM: QA Passed</span>`;
+      } else if (s === 'image approved') {
+        return `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">Tue 3AM: Plate Ready</span>`;
+      } else if (s === 'video ready') {
+        return `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">Wed 3AM: Video Prod</span>`;
+      } else if (s === 'revision needed') {
+        return `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">⚠️ Revision Needed</span>`;
+      } else if (s === 'idea') {
+        return `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/25">Mon 3AM: Idea</span>`;
+      }
+      return `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-700 text-slate-300">${escapeHTML(status || 'Drafting')}</span>`;
+    }
+
+    function getChannelBadge(channel) {
+      const c = (channel || '').toLowerCase();
+      if (c.includes('instagram')) {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-pink-500/15 text-pink-400 border border-pink-500/20">Instagram</span>`;
+      } else if (c.includes('tiktok')) {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/15 text-cyan-400 border border-cyan-500/20">TikTok</span>`;
+      } else if (c.includes('threads')) {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-violet-500/15 text-violet-400 border border-violet-500/20">Threads</span>`;
+      }
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">${escapeHTML(channel || 'General')}</span>`;
+    }
+
+    function applyFilters() {
+      const query = (searchInput.value || '').toLowerCase().trim();
+      const stageVal = filterStage.value;
+      const reviewStateVal = filterReviewState.value;
+      const channelVal = filterChannel.value;
+      const pillarVal = filterPillar.value;
+      const mediaVal = filterMedia.value;
+
+      filteredPosts = posts.filter(post => {
+        if (channelVal !== 'ALL' && post.channel !== channelVal) return false;
+        if (pillarVal !== 'ALL' && post.pillar !== pillarVal) return false;
+
+        const postStatus = (post.qaStatus || '').toLowerCase();
+        const postStageState = inferClientStageState(post).toLowerCase();
+
+        if (stageVal === 'IDEA' && !['idea', 'ideation', 'raw research'].includes(postStatus)) return false;
+        if (stageVal === 'DRAFTED' && !['drafted', 'image approved', 'pending', 'in progress', 'revision needed'].includes(postStatus)) return false;
+        if (stageVal === 'REVISION' && !['revision needed', 'revision'].includes(postStatus)) return false;
+        if (stageVal === 'QA_PASSED' && !['qa passed', 'qa pass', 'verified'].includes(postStatus)) return false;
+        if (stageVal === 'VIDEO_READY' && !['video ready', 'video production', 'video generated', 'in video'].includes(postStatus)) return false;
+        if (stageVal === 'APPROVED' && !['approved', 'scheduled', 'live', 'published'].includes(postStatus)) return false;
+
+        if (reviewStateVal === 'READY_REVIEW' && postStageState !== 'ready for review') return false;
+        if (reviewStateVal === 'QUEUED_AGENT' && postStageState !== 'queued for agent') return false;
+        if (reviewStateVal === 'STAGED' && postStageState !== 'staged & ready') return false;
+
+        if (mediaVal === 'HAS_MEDIA' && !post.media) return false;
+        if (mediaVal === 'IMAGE' && (!post.media || post.media.type !== 'image')) return false;
+        if (mediaVal === 'VIDEO' && (!post.media || post.media.type !== 'video')) return false;
+
+        if (query) {
+          const matchId = (post.id || '').toLowerCase().includes(query);
+          const matchHook = (post.hook || '').toLowerCase().includes(query);
+          const matchCopy = (post.draftCopy || '').toLowerCase().includes(query);
+          const matchLoc = (post.locationInfo || '').toLowerCase().includes(query);
+          if (!matchId && !matchHook && !matchCopy && !matchLoc) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById('filteredCount').textContent = filteredPosts.length;
+      renderCurrentView();
+    }
+
+    function renderCurrentView() {
+      if (activeView === 'kanban') renderKanban();
+      else if (activeView === 'gallery') renderGallery();
+      else if (activeView === 'table') renderTable();
+      else if (activeView === 'timeline') renderTimeline();
+      else if (activeView === 'analytics') renderAnalytics();
+    }
+
+    function renderKanban() {
+      const colIdea = document.getElementById('colListIdea');
+      const colDraft = document.getElementById('colListDraft');
+      const colQA = document.getElementById('colListQA');
+      const colVideo = document.getElementById('colListVideo');
+      const colApproved = document.getElementById('colListApproved');
+
+      if (colIdea) colIdea.innerHTML = '';
+      colDraft.innerHTML = '';
+      colQA.innerHTML = '';
+      colVideo.innerHTML = '';
+      colApproved.innerHTML = '';
+
+      let cIdea = 0, cDraft = 0, cQA = 0, cVideo = 0, cApproved = 0;
+
+      filteredPosts.forEach(post => {
+        const status = (post.qaStatus || '').toLowerCase();
+        const isRevision = status === 'revision needed';
+        const stageState = inferClientStageState(post);
+        const isQueued = stageState.toLowerCase() === 'queued for agent';
+
+        const card = document.createElement('div');
+        if (isRevision) {
+          card.className = 'bg-rose-950/20 border border-rose-500/60 hover:border-rose-400 rounded-xl p-3.5 space-y-2.5 cursor-pointer shadow-sm hover:shadow-md transition group overflow-hidden';
+        } else if (isQueued) {
+          card.className = 'bg-slate-950/80 border border-dashed border-amber-500/50 hover:border-amber-400 rounded-xl p-3.5 space-y-2.5 cursor-pointer shadow-sm hover:shadow-md transition group overflow-hidden';
+        } else {
+          card.className = 'bg-slate-950 border-l-4 border-l-cyan-500 border-y border-r border-slate-800 hover:border-slate-700 rounded-xl p-3.5 space-y-2.5 cursor-pointer shadow-sm hover:shadow-md transition group overflow-hidden';
+        }
+        card.addEventListener('click', () => openDetailModal(post));
+
+        let mediaSnippet = '';
+        if (post.media) {
+          if (post.media.type === 'image') {
+            mediaSnippet = `
+              <div class="relative w-full h-28 rounded-lg overflow-hidden bg-slate-900 border border-slate-800 mb-1">
+                <img src="${escapeHTML(post.media.thumbUrl)}" alt="${escapeHTML(post.media.title)}" referrerpolicy="no-referrer" loading="lazy" onerror="handleDriveImgError(this, '${escapeHTML(post.media.fileId || '')}')" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                <div class="hidden w-full h-full bg-slate-900/90 flex flex-col items-center justify-center text-slate-400 text-[10px] p-2 text-center border border-slate-800">
+                  <span>🔒 Private Asset</span>
+                  <span class="text-[9px] text-slate-500">Enable Link Sharing</span>
+                </div>
+                <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 text-[10px] text-brand-marigold font-semibold">🖼️ Plate</span>
+              </div>
+            `;
+          } else if (post.media.type === 'video') {
+            mediaSnippet = `
+              <div class="relative w-full h-24 rounded-lg overflow-hidden bg-gradient-to-br from-purple-900/60 to-slate-900 border border-purple-800/40 mb-1 flex items-center justify-center">
+                <span class="px-2.5 py-1 rounded-full bg-black/60 text-xs text-white font-semibold flex items-center gap-1.5 border border-white/20">
+                  <span>▶</span> Reel Ready
+                </span>
+              </div>
+            `;
+          }
+        }
+
+        const revisionBanner = isRevision
+          ? `<div class="px-2 py-1 rounded bg-rose-500/20 border border-rose-500/30 text-[10px] font-semibold text-rose-300 flex items-center justify-between">
+              <span>⚠️ Revision Requested</span>
+              <span>Tue 3AM Queue</span>
+            </div>`
+          : '';
+        const stateRow = `<div class="flex items-center justify-between gap-1 pt-0.5">
+          ${getStageStateBadge(stageState, post.lastMovedAt, post.pendingSync)}
+        </div>`;
+
+        card.innerHTML = `
+          ${mediaSnippet}
+          ${revisionBanner}
+          ${stateRow}
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-brand-burgundyLight tracking-wide">${escapeHTML(post.id)}</span>
+            ${getChannelBadge(post.channel)}
+          </div>
+          <h4 class="text-xs font-semibold text-slate-100 group-hover:text-brand-marigold transition line-clamp-2 leading-snug">
+            ${escapeHTML(post.hook || 'Untitled Post')}
+          </h4>
+          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-900">
+            <span class="truncate max-w-[120px] text-slate-500">${escapeHTML(post.pillar)}</span>
+            <span>📅 ${escapeHTML(post.targetDate || 'TBD')}</span>
+          </div>
+        `;
+
+        const normalized = status.trim();
+        if (['idea', 'ideation', 'raw research'].includes(normalized)) {
+          if (colIdea) colIdea.appendChild(card);
+          cIdea++;
+        } else if (['approved', 'scheduled', 'live', 'published'].includes(normalized)) {
+          colApproved.appendChild(card);
+          cApproved++;
+        } else if (['qa passed', 'qa pass', 'verified'].includes(normalized)) {
+          colQA.appendChild(card);
+          cQA++;
+        } else if (['video ready', 'video production', 'video generated', 'in video'].includes(normalized)) {
+          colVideo.appendChild(card);
+          cVideo++;
+        } else {
+          colDraft.appendChild(card);
+          cDraft++;
+        }
+      });
+
+      if (document.getElementById('colCountIdea')) document.getElementById('colCountIdea').textContent = cIdea;
+      document.getElementById('colCountDraft').textContent = cDraft;
+      document.getElementById('colCountQA').textContent = cQA;
+      document.getElementById('colCountVideo').textContent = cVideo;
+      document.getElementById('colCountApproved').textContent = cApproved;
+    }
+
+    function renderGallery() {
+      const gallery = document.getElementById('galleryGrid');
+      gallery.innerHTML = '';
+
+      const mediaPosts = filteredPosts.filter(p => p.media);
+
+      if (mediaPosts.length === 0) {
+        gallery.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No media assets found for current filters.</div>`;
+        return;
+      }
+
+      mediaPosts.forEach(post => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer group flex flex-col';
+        card.addEventListener('click', () => openDetailModal(post));
+
+        let previewBlock = '';
+        if (post.media.type === 'image') {
+          previewBlock = `
+            <div class="relative w-full aspect-[4/3] bg-black overflow-hidden flex items-center justify-center">
+              <img src="${escapeHTML(post.media.thumbUrl)}" alt="${escapeHTML(post.media.title)}" referrerpolicy="no-referrer" loading="lazy" onerror="handleDriveImgError(this, '${escapeHTML(post.media.fileId || '')}')" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+              <div class="hidden w-full h-full bg-slate-900/90 flex flex-col items-center justify-center text-slate-400 text-[10px] p-2 text-center border border-slate-800">
+                <span>🔒 Private Asset</span>
+                <span class="text-[9px] text-slate-500">Enable Link Sharing</span>
+              </div>
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-amber-300 font-bold border border-amber-500/30">IMAGE PLATE</span>
+            </div>
+          `;
+        } else if (post.media.type === 'video') {
+          previewBlock = `
+            <div class="relative w-full aspect-[4/3] bg-gradient-to-br from-purple-950 to-slate-900 overflow-hidden flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-brand-burgundy/80 text-white flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-110 transition">
+                ▶
+              </div>
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-purple-300 font-bold border border-purple-500/30">REEL VIDEO</span>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          ${previewBlock}
+          <div class="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-brand-burgundyLight">${escapeHTML(post.id)}</span>
+                ${getChannelBadge(post.channel)}
+              </div>
+              <h4 class="text-xs font-semibold text-slate-100 group-hover:text-brand-marigold transition line-clamp-2">
+                ${escapeHTML(post.media.title || post.hook)}
+              </h4>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-[11px] text-slate-400">
+              <span class="truncate max-w-[120px] text-slate-500">${escapeHTML(post.pillar)}</span>
+              ${getStatusBadge(post.qaStatus)}
+            </div>
+          </div>
+        `;
+        gallery.appendChild(card);
+      });
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      if (filteredPosts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-slate-500">No posts match the selected criteria.</td></tr>`;
+        return;
+      }
+
+      filteredPosts.forEach(post => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition cursor-pointer';
+        tr.addEventListener('click', () => openDetailModal(post));
+
+        const assetButton = (post.assetLink && post.assetLink.startsWith('http'))
+          ? `<a href="${escapeHTML(post.assetLink)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="text-brand-burgundyLight hover:underline font-medium">Folder ↗</a>`
+          : `<span class="text-slate-600">—</span>`;
+
+        let mediaIndicator = `<span class="text-slate-600">—</span>`;
+        if (post.media) {
+          if (post.media.type === 'image') {
+            mediaIndicator = `<span class="text-amber-400 font-medium">🖼️ Image</span>`;
+          } else if (post.media.type === 'video') {
+            mediaIndicator = `<span class="text-purple-400 font-medium">🎬 Video</span>`;
+          }
+        }
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-slate-100 whitespace-nowrap">${escapeHTML(post.id)}</td>
+          <td class="py-3 px-4 whitespace-nowrap">${mediaIndicator}</td>
+          <td class="py-3 px-4 whitespace-nowrap text-slate-400">${escapeHTML(post.targetDate || 'TBD')}</td>
+          <td class="py-3 px-4 whitespace-nowrap">${getChannelBadge(post.channel)}</td>
+          <td class="py-3 px-4 whitespace-nowrap text-slate-300 font-medium">${escapeHTML(post.pillar)}</td>
+          <td class="py-3 px-4 font-medium text-slate-200 max-w-xs truncate">${escapeHTML(post.hook || '')}</td>
+          <td class="py-3 px-4 whitespace-nowrap">${getStatusBadge(post.qaStatus)}</td>
+          <td class="py-3 px-4 whitespace-nowrap">${getStageStateBadge(inferClientStageState(post), post.lastMovedAt, post.pendingSync)}</td>
+          <td class="py-3 px-4 whitespace-nowrap">${assetButton}</td>
+          <td class="py-3 px-4 whitespace-nowrap text-right">
+            <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">
+              View
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById('timelineContainer');
+      container.innerHTML = '';
+
+      const groups = {};
+      filteredPosts.forEach(post => {
+        const m = post.monthKey || 'Unscheduled';
+        if (!groups[m]) groups[m] = [];
+        groups[m].push(post);
+      });
+
+      const months = Object.keys(groups).sort();
+      if (months.length === 0) {
+        container.innerHTML = `<p class="text-center text-slate-500 py-8">No scheduled posts found.</p>`;
+        return;
+      }
+
+      months.forEach(month => {
+        const section = document.createElement('div');
+        section.className = 'space-y-3';
+
+        const monthHeader = document.createElement('div');
+        monthHeader.className = 'flex items-center gap-3';
+        monthHeader.innerHTML = `
+          <h3 class="text-sm font-bold text-brand-marigold uppercase tracking-wider">${escapeHTML(month)}</h3>
+          <span class="text-xs text-slate-500 font-medium">${groups[month].length} scheduled posts</span>
+          <div class="flex-1 h-px bg-slate-800"></div>
+        `;
+        section.appendChild(monthHeader);
+
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5';
+
+        groups[month].forEach(post => {
+          const status = (post.qaStatus || '').toLowerCase();
+          const isRevision = status === 'revision needed';
+          const stageState = inferClientStageState(post);
+          const isQueued = stageState.toLowerCase() === 'queued for agent';
+
+          const card = document.createElement('div');
+          if (isRevision) {
+            card.className = 'bg-rose-950/20 border border-rose-500/60 hover:border-rose-400 rounded-xl p-4 space-y-2 cursor-pointer transition shadow-sm';
+          } else if (isQueued) {
+            card.className = 'bg-slate-900 border border-dashed border-amber-500/50 hover:border-amber-400 rounded-xl p-4 space-y-2 cursor-pointer transition shadow-sm';
+          } else {
+            card.className = 'bg-slate-900 border-l-4 border-l-cyan-500 border-y border-r border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2 cursor-pointer transition shadow-sm';
+          }
+          card.addEventListener('click', () => openDetailModal(post));
+
+          const locPrimary = post.locationInfo ? post.locationInfo.split('|')[0] : '';
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between text-xs gap-1 flex-wrap">
+              <span class="font-bold text-white">📅 ${escapeHTML(post.targetDate || 'TBD')}</span>
+              ${getStatusBadge(post.qaStatus)}
+            </div>
+            <div class="flex items-center justify-between gap-1 pt-0.5">
+              ${getStageStateBadge(stageState, post.lastMovedAt, post.pendingSync)}
+              ${post.media ? `<span class="text-[10px] text-amber-400 font-semibold">🎨 Media</span>` : ''}
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <span class="text-xs font-bold text-brand-burgundyLight">${escapeHTML(post.id)}</span>
+              ${getChannelBadge(post.channel)}
+            </div>
+            <p class="text-xs font-semibold text-slate-200 line-clamp-2">${escapeHTML(post.hook || '')}</p>
+            <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-800 truncate">${escapeHTML(post.pillar)}${locPrimary ? ' • ' + escapeHTML(locPrimary) : ''}</p>
+          `;
+          grid.appendChild(card);
+        });
+
+        section.appendChild(grid);
+        container.appendChild(section);
+      });
+    }
+
+    // Analytics driven by active filteredPosts + Review Readiness breakdown (Fix for BUG-009)
+    function renderAnalytics() {
+      const channelCounts = {};
+      const pillarCounts = {};
+      const statusCounts = {};
+      const readinessCounts = {
+        'Ready for Review': 0,
+        'Queued for Agent': 0,
+        'Staged & Ready': 0,
+        'Revision Needed': 0
+      };
+
+      const subtitle = document.getElementById('analyticsFilterSubtitle');
+      if (subtitle) {
+        subtitle.textContent = filteredPosts.length === posts.length
+          ? `Showing pipeline metrics across all ${posts.length} posts`
+          : `Showing filtered metrics for ${filteredPosts.length} of ${posts.length} posts`;
+      }
+
+      filteredPosts.forEach(p => {
+        channelCounts[p.channel] = (channelCounts[p.channel] || 0) + 1;
+        pillarCounts[p.pillar] = (pillarCounts[p.pillar] || 0) + 1;
+        statusCounts[p.qaStatus] = (statusCounts[p.qaStatus] || 0) + 1;
+
+        if ((p.qaStatus || '').toLowerCase() === 'revision needed') {
+          readinessCounts['Revision Needed']++;
+        } else {
+          const st = inferClientStageState(p);
+          readinessCounts[st] = (readinessCounts[st] || 0) + 1;
+        }
+      });
+
+      if (charts.channel) charts.channel.destroy();
+      if (charts.pillar) charts.pillar.destroy();
+      if (charts.status) charts.status.destroy();
+      if (charts.readiness) charts.readiness.destroy();
+
+      const ctxChannel = document.getElementById('chartChannel').getContext('2d');
+      charts.channel = new Chart(ctxChannel, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(channelCounts),
+          datasets: [{
+            data: Object.values(channelCounts),
+            backgroundColor: ['#E1306C', '#00f2fe', '#833AB4', '#64748b'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12 } }
+          }
+        }
+      });
+
+      const ctxPillar = document.getElementById('chartPillar').getContext('2d');
+      charts.pillar = new Chart(ctxPillar, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(pillarCounts),
+          datasets: [{
+            label: 'Posts',
+            data: Object.values(pillarCounts),
+            backgroundColor: '#D4A017',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+          }
+        }
+      });
+
+      const ctxStatus = document.getElementById('chartStatus').getContext('2d');
+      charts.status = new Chart(ctxStatus, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(statusCounts),
+          datasets: [{
+            label: 'Count',
+            data: Object.values(statusCounts),
+            backgroundColor: '#961145',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+          }
+        }
+      });
+
+      const ctxReadiness = document.getElementById('chartReadiness').getContext('2d');
+      charts.readiness = new Chart(ctxReadiness, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(readinessCounts),
+          datasets: [{
+            data: Object.values(readinessCounts),
+            backgroundColor: ['#06b6d4', '#f59e0b', '#10b981', '#f43f5e'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 11 } }
+          }
+        }
+      });
+    }
+
+    let activePostCopy = '';
+    let currentModalPost = null;
+    let secondaryRouteTarget = null;
+
+    const btnAdvanceStage = document.getElementById('btnAdvanceStage');
+    const btnAdvanceText = document.getElementById('btnAdvanceText');
+    const secondaryRouteRow = document.getElementById('secondaryRouteRow');
+    const btnSecondaryRoute = document.getElementById('btnSecondaryRoute');
+    const btnRequestRevision = document.getElementById('btnRequestRevision');
+    const btnMarkReadyReview = document.getElementById('btnMarkReadyReview');
+    const revisionBox = document.getElementById('revisionBox');
+    const btnCancelRevision = document.getElementById('btnCancelRevision');
+    const btnSubmitRevision = document.getElementById('btnSubmitRevision');
+    const revisionNotesInput = document.getElementById('revisionNotesInput');
+
+    btnRequestRevision.addEventListener('click', () => {
+      revisionBox.classList.remove('hidden');
+      revisionNotesInput.focus();
+    });
+
+    btnCancelRevision.addEventListener('click', () => {
+      revisionBox.classList.add('hidden');
+      revisionNotesInput.value = '';
+    });
+
+    // Channel & format-aware video eligibility check (Fix for BUG-003)
+    function isVideoEligiblePost(post) {
+      if (!post) return false;
+      const ch = (post.channel || '').toLowerCase();
+      if (ch === 'threads') return false;
+      if (ch === 'tiktok') return true;
+      const specs = (post.visualSpecs || '').toLowerCase();
+      return specs.includes('9:16') || specs.includes('reel') || specs.includes('video') || specs.includes('motion');
+    }
+
+    function getNextStage(currentStatus, post) {
+      const s = (currentStatus || '').toLowerCase().trim();
+      if (s === 'idea' || s === 'ideation' || s === 'raw research') {
+        return { next: 'Drafted', label: 'Approve Idea → Queue Drafting (Tue 3AM)', secondary: null };
+      }
+      if (s === 'drafted' || s === 'image approved' || s === 'revision needed' || s === 'pending' || s === 'in progress') {
+        return { next: 'QA Passed', label: 'Pass 4-Point QA Gate (Wed 1AM)', secondary: null };
+      }
+      if (s === 'qa passed' || s === 'qa pass' || s === 'verified') {
+        if (isVideoEligiblePost(post)) {
+          return {
+            next: 'Video Ready',
+            label: 'Queue Video Production (Wed 3AM)',
+            secondary: { next: 'Approved', label: 'Skip Video → Final Staging Sign-Off (Thu 3AM)' }
+          };
+        }
+        return {
+          next: 'Approved',
+          label: 'Final Staging Sign-Off (Thu 3AM)',
+          secondary: { next: 'Video Ready', label: '🎬 Queue Optional 9:16 Reel Adaptation (Wed 3AM)' }
+        };
+      }
+      if (s === 'video ready' || s === 'video production' || s === 'video generated') {
+        return { next: 'Approved', label: 'Final Staging Sign-Off (Thu 3AM)', secondary: null };
+      }
+      return { next: 'Approved', label: 'Approved & Staged', secondary: null };
+    }
+
+    function formatNowTimestamp() {
+      return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function applyPostTransition(post, newStatus, newStageState, noteText, toastMsg) {
+      const nowStr = formatNowTimestamp();
+      post.qaStatus = newStatus;
+      post.stageState = newStageState;
+      post.lastMovedAt = nowStr;
+      post.pendingSync = true;
+      if (noteText) {
+        post.qaNotes = noteText + (post.qaNotes ? ' | ' + post.qaNotes : '');
+      }
+
+      const postIdx = posts.findIndex(p => p.id === post.id);
+      if (postIdx !== -1) {
+        posts[postIdx] = { ...post };
+      }
+
+      savePostsLocally(posts);
+      updateKPIs();
+      applyFilters();
+      closeDetailModal();
+      showToast(toastMsg);
+
+      await syncStatusUpdateToSheets(post.id, newStatus, noteText, newStageState);
+    }
+
+    btnMarkReadyReview.addEventListener('click', async () => {
+      if (!currentModalPost) return;
+      const nowStr = formatNowTimestamp();
+      await applyPostTransition(
+        currentModalPost,
+        currentModalPost.qaStatus,
+        'Ready for Review',
+        `[Ready for Review ${nowStr}]: Marked ready for stage review.`,
+        `Marked ${currentModalPost.id} as Ready for Review!`
+      );
+    });
+
+    btnAdvanceStage.addEventListener('click', async () => {
+      if (!currentModalPost || (currentModalPost.qaStatus || '').toLowerCase() === 'approved') return;
+      const target = getNextStage(currentModalPost.qaStatus, currentModalPost);
+      const newStatus = target.next;
+      const newStageState = 'Queued for Agent';
+      const nowStr = formatNowTimestamp();
+      const oldStatus = currentModalPost.qaStatus;
+
+      await applyPostTransition(
+        currentModalPost,
+        newStatus,
+        newStageState,
+        `[Human Sign-Off ${nowStr}]: Advanced from "${oldStatus}" to "${newStatus}".`,
+        `Moved ${currentModalPost.id} to "${newStatus}" (${newStageState})!`
+      );
+    });
+
+    btnSecondaryRoute.addEventListener('click', async () => {
+      if (!currentModalPost || !secondaryRouteTarget) return;
+      const newStatus = secondaryRouteTarget.next;
+      const newStageState = 'Queued for Agent';
+      const nowStr = formatNowTimestamp();
+      const oldStatus = currentModalPost.qaStatus;
+
+      await applyPostTransition(
+        currentModalPost,
+        newStatus,
+        newStageState,
+        `[Human Sign-Off ${nowStr}]: Routed from "${oldStatus}" to "${newStatus}".`,
+        `Moved ${currentModalPost.id} to "${newStatus}" (${newStageState})!`
+      );
+    });
+
+    btnSubmitRevision.addEventListener('click', async () => {
+      if (!currentModalPost) return;
+      const notes = revisionNotesInput.value.trim();
+      if (!notes) {
+        showToast('Please provide revision notes for the agents', '⚠️');
+        revisionNotesInput.focus();
+        return;
+      }
+
+      const timestamp = formatNowTimestamp();
+      const formattedNote = `[Revision Requested ${timestamp}]: ${notes}`;
+
+      revisionBox.classList.add('hidden');
+      revisionNotesInput.value = '';
+
+      await applyPostTransition(
+        currentModalPost,
+        'Revision Needed',
+        'Queued for Agent',
+        formattedNote,
+        `Marked ${currentModalPost.id} for Revision (Queued for Tue 3AM Agent)!`
+      );
+    });
+
+    async function syncStatusUpdateToSheets(postId, newStatus, notes = '', stageState = 'Queued for Agent') {
+      let url = DEFAULT_API_URL;
+      try {
+        url = localStorage.getItem(STORAGE_KEY_API_URL) || DEFAULT_API_URL;
+      } catch (e) {}
+
+      if (!url) return;
+
+      if (!backendSupportsWrite) {
+        showToast('Saved locally — deploy a New Version in Apps Script to write to Sheets', '⚠️');
+        return;
+      }
+
+      const updateUrl = `${url}?action=updateStatus&postId=${encodeURIComponent(postId)}&status=${encodeURIComponent(newStatus)}&stageState=${encodeURIComponent(stageState)}&notes=${encodeURIComponent(notes)}`;
+
+      try {
+        const result = await fetchWithJSONP(updateUrl);
+        if (result && result.success) {
+          const idx = posts.findIndex(p => p.id === postId);
+          if (idx !== -1) {
+            posts[idx].pendingSync = false;
+            savePostsLocally(posts);
+            applyFilters();
+          }
+          showToast(`Recorded "${newStatus}" for ${postId} in Google Sheets (Row ${result.row})!`, '☁️');
+        } else {
+          const errMsg = (result && result.error) ? result.error : 'Unknown Apps Script response';
+          console.warn('Apps Script update warning:', errMsg);
+          showToast(`Sheet sync warning: ${errMsg}`, '⚠️');
+        }
+      } catch (err) {
+        console.warn('JSONP update fallback triggered:', err);
+        fetch(updateUrl, { method: 'GET', mode: 'no-cors', cache: 'no-cache' }).catch(() => {});
+        showToast(`Dispatched ${postId} update to Google Sheets`, '☁️');
+      }
+    }
+
+    function fetchWithJSONP(url) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'gbl_cb_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        const sep = url.includes('?') ? '&' : '?';
+        script.src = `${url}${sep}callback=${callbackName}`;
+
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          reject(new Error('JSONP connection timed out'));
+        }, 10000);
+
+        function cleanup() {
+          if (window[callbackName]) delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+          clearTimeout(timeoutId);
+        }
+
+        window[callbackName] = function(data) {
+          cleanup();
+          resolve(data);
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error('JSONP script failed to load'));
+        };
+
+        document.head.appendChild(script);
+      });
+    }
+
+    async function fetchLiveData(url) {
+      const syncBadge = document.getElementById('syncStatusText');
+      const syncDot = document.getElementById('syncStatusDot');
+      syncBadge.textContent = 'Syncing...';
+      syncDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping';
+
+      let json = null;
+
+      try {
+        json = await fetchWithJSONP(url);
+      } catch (jsonpErr) {
+        console.warn('JSONP note, trying fetch fallback:', jsonpErr.message);
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            redirect: 'follow',
+            headers: { 'Accept': 'application/json' }
+          });
+          if (response.ok) {
+            json = await response.json();
+          }
+        } catch (fetchErr) {
+          console.warn('Fetch fallback error:', fetchErr.message);
+        }
+      }
+
+      if (json && json.posts && Array.isArray(json.posts) && json.posts.length > 0) {
+        backendSupportsWrite = Boolean(json.supportsWrite);
+        const pendingLocalPosts = posts.filter(p => p.pendingSync);
+
+        // If backend supports write and there are queued local edits, flush them first (BUG-007)
+        if (backendSupportsWrite && pendingLocalPosts.length > 0) {
+          for (const localPost of pendingLocalPosts) {
+            try {
+              const flushUrl = `${url}?action=updateStatus&postId=${encodeURIComponent(localPost.id)}&status=${encodeURIComponent(localPost.qaStatus)}&stageState=${encodeURIComponent(localPost.stageState || 'Queued for Agent')}&notes=${encodeURIComponent(localPost.qaNotes || '')}`;
+              const flushRes = await fetchWithJSONP(flushUrl);
+              if (flushRes && flushRes.success) {
+                localPost.pendingSync = false;
+              }
+            } catch (e) {}
+          }
+        }
+
+        const mergedPosts = json.posts.map(remotePost => {
+          const existingInitial = INITIAL_POSTS.find(initP => initP.id === remotePost.id);
+          const localPending = pendingLocalPosts.find(lp => lp.id === remotePost.id && lp.pendingSync);
+
+          const basePost = {
+            ...remotePost,
+            stageState: inferClientStageState(remotePost),
+            media: extractClientDriveMedia(remotePost) || (existingInitial ? existingInitial.media : null),
+            pendingSync: false
+          };
+
+          // Preserve unsynced local changes instead of silently wiping them (BUG-007)
+          if (localPending) {
+            return {
+              ...basePost,
+              qaStatus: localPending.qaStatus,
+              stageState: localPending.stageState,
+              lastMovedAt: localPending.lastMovedAt,
+              qaNotes: localPending.qaNotes,
+              pendingSync: true
+            };
+          }
+          return basePost;
+        });
+
+        posts = mergedPosts;
+        savePostsLocally(posts);
+
+        const remainingUnsynced = posts.filter(p => p.pendingSync).length;
+        const diagStatus = document.getElementById('apiWriteStatusText');
+        const diagHelp = document.getElementById('apiWriteHelpText');
+
+        if (backendSupportsWrite) {
+          syncBadge.textContent = 'Live Synced (2-Way)';
+          syncDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          if (diagStatus) {
+            diagStatus.textContent = `Active (API v${json.apiVersion || '2.3'})`;
+            diagStatus.className = 'text-emerald-400 font-bold';
+          }
+          if (diagHelp) {
+            diagHelp.textContent = 'Stage approvals and revision requests write directly to Google Sheets.';
+          }
+          showToast(`Synced ${posts.length} posts (2-Way Write Active)!`);
+        } else {
+          syncBadge.textContent = 'Live Synced (Read-Only)';
+          syncDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+          if (diagStatus) {
+            diagStatus.textContent = 'Read-Only Deployment Detected';
+            diagStatus.className = 'text-amber-400 font-bold';
+          }
+          if (diagHelp) {
+            diagHelp.innerHTML = 'Your live URL is running an older read-only script. Open Apps Script &rarr; <strong>Deploy &rarr; Manage deployments &rarr; Edit &rarr; New version</strong> to enable saving.';
+          }
+          if (remainingUnsynced > 0) {
+            showToast(`Preserved ${remainingUnsynced} unsynced local edit(s) — deploy New Version in Apps Script`, '⚠️');
+          } else {
+            showToast(`Synced ${posts.length} posts (Read-Only — publish New Version to save edits)`, '⚠️');
+          }
+        }
+      } else {
+        syncBadge.textContent = 'Cached Data (Active)';
+        syncDot.className = 'w-2 h-2 rounded-full bg-blue-500';
+      }
+
+      applyFilters();
+      updateKPIs();
+    }
+
+    function openDetailModal(post) {
+      currentModalPost = post;
+      if (revisionBox) revisionBox.classList.add('hidden');
+      if (revisionNotesInput) revisionNotesInput.value = '';
+
+      const nextGate = getNextStage(post.qaStatus, post);
+      const isAlreadyApproved = (post.qaStatus || '').toLowerCase() === 'approved';
+
+      // Properly disable Advance Stage button when already Approved (Fix for BUG-004)
+      if (isAlreadyApproved) {
+        btnAdvanceStage.disabled = true;
+        btnAdvanceStage.classList.add('opacity-50', 'cursor-not-allowed');
+        btnAdvanceStage.classList.remove('hover:bg-emerald-500');
+        if (btnAdvanceText) btnAdvanceText.textContent = '✓ Approved & Staged';
+      } else {
+        btnAdvanceStage.disabled = false;
+        btnAdvanceStage.classList.remove('opacity-50', 'cursor-not-allowed');
+        btnAdvanceStage.classList.add('hover:bg-emerald-500');
+        if (btnAdvanceText) btnAdvanceText.textContent = `✓ ${nextGate.label}`;
+      }
+
+      // Secondary optional stage routing (Fix for BUG-003)
+      secondaryRouteTarget = nextGate.secondary || null;
+      if (secondaryRouteRow && btnSecondaryRoute) {
+        if (secondaryRouteTarget && !isAlreadyApproved) {
+          btnSecondaryRoute.textContent = secondaryRouteTarget.label;
+          secondaryRouteRow.classList.remove('hidden');
+        } else {
+          secondaryRouteRow.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('modalIdBadge').textContent = post.id;
+      document.getElementById('modalStatusBadge').innerHTML = getStatusBadge(post.qaStatus);
+
+      const currentStageState = inferClientStageState(post);
+      const modalStateBadge = document.getElementById('modalStageStateBadge');
+      const modalMovedAt = document.getElementById('modalMovedAtText');
+      if (modalStateBadge) {
+        modalStateBadge.innerHTML = getStageStateBadge(currentStageState, '', post.pendingSync);
+      }
+      if (modalMovedAt) {
+        modalMovedAt.textContent = post.lastMovedAt ? `Updated: ${post.lastMovedAt}` : '';
+      }
+      if (btnMarkReadyReview) {
+        if (currentStageState.toLowerCase() === 'queued for agent') {
+          btnMarkReadyReview.classList.remove('hidden');
+        } else {
+          btnMarkReadyReview.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('modalDate').textContent = post.targetDate || 'Unscheduled';
+      document.getElementById('modalChannel').innerHTML = getChannelBadge(post.channel);
+      document.getElementById('modalPillar').textContent = post.pillar || '—';
+      document.getElementById('modalHook').textContent = post.hook || 'Untitled';
+
+      activePostCopy = post.draftCopy || 'No draft copy provided.';
+      document.getElementById('modalCopy').textContent = activePostCopy;
+      document.getElementById('modalVisualSpecs').textContent = post.visualSpecs || 'Modern Urban Field Guide Palette: Burgundy #961145, Marigold #D4A017, Parchment #F9F6EE';
+      document.getElementById('modalLocation').textContent = post.locationInfo || 'No verification notes recorded.';
+      document.getElementById('modalQANotes').textContent = post.qaNotes || 'Pending audit.';
+
+      const mediaContainer = document.getElementById('modalMediaContainer');
+      const imgWrapper = document.getElementById('modalImageWrapper');
+      const videoWrapper = document.getElementById('modalVideoWrapper');
+      const modalImg = document.getElementById('modalImg');
+      const modalImgFallback = document.getElementById('modalImgFallback');
+      const videoFrame = document.getElementById('modalVideoFrame');
+      const mediaCaption = document.getElementById('modalMediaCaption');
+      const mediaViewBtn = document.getElementById('modalMediaViewBtn');
+      const modalMediaBadge = document.getElementById('modalMediaBadge');
+
+      if (post.media) {
+        mediaContainer.classList.remove('hidden');
+        mediaCaption.textContent = post.media.title || '';
+        mediaViewBtn.href = post.media.viewUrl || '#';
+
+        modalMediaBadge.classList.remove('hidden');
+        modalMediaBadge.textContent = post.media.type === 'video' ? '🎬 Reel Ready' : '🖼️ Plate Ready';
+
+        if (post.media.type === 'image') {
+          imgWrapper.classList.remove('hidden');
+          videoWrapper.classList.add('hidden');
+          videoFrame.src = '';
+
+          delete modalImg.dataset.fallbackTried;
+          modalImg.classList.remove('hidden');
+          if (modalImgFallback) modalImgFallback.classList.add('hidden');
+
+          modalImg.onload = () => {
+            modalImg.classList.remove('hidden');
+            if (modalImgFallback) modalImgFallback.classList.add('hidden');
+          };
+
+          modalImg.onerror = () => {
+            window.handleDriveImgError(modalImg, post.media.fileId);
+          };
+
+          modalImg.src = post.media.thumbUrl;
+        } else if (post.media.type === 'video') {
+          videoWrapper.classList.remove('hidden');
+          imgWrapper.classList.add('hidden');
+          videoFrame.src = post.media.embedUrl;
+          modalImg.src = '';
+        }
+      } else {
+        mediaContainer.classList.add('hidden');
+        imgWrapper.classList.add('hidden');
+        videoWrapper.classList.add('hidden');
+        modalMediaBadge.classList.add('hidden');
+        videoFrame.src = '';
+        modalImg.src = '';
+      }
+
+      const assetLinkBtn = document.getElementById('modalAssetLink');
+      const assetBtnText = document.getElementById('modalAssetBtnText');
+      const isIdeaStage = (post.qaStatus || '').toLowerCase() === 'idea';
+      
+      const FOLDER_RAW_RESEARCH = 'https://drive.google.com/drive/folders/16lBEF71ImyRYMPbT2l0KgghxU-O8NItQ';
+      const FOLDER_DRAFTS_REVIEW = 'https://drive.google.com/drive/folders/1c4ngy76T7xUJP0IT7Ogvrx45Gid8IhKe';
+
+      let targetFolderUrl = post.assetLink;
+
+      if (isIdeaStage && (!targetFolderUrl || targetFolderUrl === FOLDER_DRAFTS_REVIEW)) {
+        targetFolderUrl = FOLDER_RAW_RESEARCH;
+      }
+
+      if (targetFolderUrl && targetFolderUrl.startsWith('http')) {
+        assetLinkBtn.href = targetFolderUrl;
+        assetLinkBtn.classList.remove('opacity-50', 'pointer-events-none');
+        
+        if (assetBtnText) {
+          if (targetFolderUrl === FOLDER_RAW_RESEARCH) {
+            assetBtnText.textContent = 'Open 01-Raw Research Folder (Stage)';
+          } else if (targetFolderUrl === FOLDER_DRAFTS_REVIEW) {
+            assetBtnText.textContent = 'Open 02-Drafts Review Folder (Stage)';
+          } else {
+            assetBtnText.textContent = `Open Dedicated Folder (${post.id})`;
+          }
+        }
+      } else {
+        assetLinkBtn.href = '#';
+        assetLinkBtn.classList.add('opacity-50', 'pointer-events-none');
+        if (assetBtnText) assetBtnText.textContent = 'No Folder Assigned';
+      }
+
+      postModal.classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      postModal.classList.add('hidden');
+      document.getElementById('modalVideoFrame').src = '';
+    }
+
+    btnCopyCaption.addEventListener('click', () => {
+      if (!activePostCopy) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(activePostCopy).then(() => {
+          showToast('Caption copied to clipboard!');
+        }).catch(() => {
+          showToast('Failed to copy caption', '⚠️');
+        });
+      } else {
+        const el = document.createElement('textarea');
+        el.value = activePostCopy;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        showToast('Caption copied to clipboard!');
+      }
+    });
+
+    function setView(view) {
+      activeView = view;
+      [tabKanban, tabGallery, tabTable, tabTimeline, tabAnalytics].forEach(t => {
+        t.classList.remove('bg-brand-burgundy', 'text-white', 'shadow-sm');
+        t.classList.add('text-slate-400');
+      });
+      [viewKanban, viewGallery, viewTable, viewTimeline, viewAnalytics].forEach(v => v.classList.add('hidden'));
+
+      if (view === 'kanban') {
+        tabKanban.classList.add('bg-brand-burgundy', 'text-white', 'shadow-sm');
+        tabKanban.classList.remove('text-slate-400');
+        viewKanban.classList.remove('hidden');
+      } else if (view === 'gallery') {
+        tabGallery.classList.add('bg-brand-burgundy', 'text-white', 'shadow-sm');
+        tabGallery.classList.remove('text-slate-400');
+        viewGallery.classList.remove('hidden');
+      } else if (view === 'table') {
+        tabTable.classList.add('bg-brand-burgundy', 'text-white', 'shadow-sm');
+        tabTable.classList.remove('text-slate-400');
+        viewTable.classList.remove('hidden');
+      } else if (view === 'timeline') {
+        tabTimeline.classList.add('bg-brand-burgundy', 'text-white', 'shadow-sm');
+        tabTimeline.classList.remove('text-slate-400');
+        viewTimeline.classList.remove('hidden');
+      } else if (view === 'analytics') {
+        tabAnalytics.classList.add('bg-brand-burgundy', 'text-white', 'shadow-sm');
+        tabAnalytics.classList.remove('text-slate-400');
+        viewAnalytics.classList.remove('hidden');
+      }
+
+      renderCurrentView();
+    }
+
+    searchInput.addEventListener('input', () => {
+      btnClearSearch.classList.toggle('hidden', !searchInput.value);
+      applyFilters();
+    });
+
+    btnClearSearch.addEventListener('click', () => {
+      searchInput.value = '';
+      btnClearSearch.classList.add('hidden');
+      applyFilters();
+    });
+
+    filterStage.addEventListener('change', applyFilters);
+    filterReviewState.addEventListener('change', applyFilters);
+    filterChannel.addEventListener('change', applyFilters);
+    filterPillar.addEventListener('change', applyFilters);
+    filterMedia.addEventListener('change', applyFilters);
+
+    btnResetFilters.addEventListener('click', () => {
+      searchInput.value = '';
+      btnClearSearch.classList.add('hidden');
+      filterStage.value = 'ALL';
+      filterReviewState.value = 'ALL';
+      filterChannel.value = 'ALL';
+      filterPillar.value = 'ALL';
+      filterMedia.value = 'ALL';
+      applyFilters();
+      showToast('Filters reset');
+    });
+
+    tabKanban.addEventListener('click', () => setView('kanban'));
+    tabGallery.addEventListener('click', () => setView('gallery'));
+    tabTable.addEventListener('click', () => setView('table'));
+    tabTimeline.addEventListener('click', () => setView('timeline'));
+    tabAnalytics.addEventListener('click', () => setView('analytics'));
+
+    btnCloseModal.addEventListener('click', closeDetailModal);
+    postModal.addEventListener('click', (e) => {
+      if (e.target === postModal) closeDetailModal();
+    });
+
+    btnOpenSettings.addEventListener('click', () => {
+      try {
+        const savedUrl = localStorage.getItem(STORAGE_KEY_API_URL) || DEFAULT_API_URL;
+        apiUrlInput.value = savedUrl;
+      } catch (e) {
+        apiUrlInput.value = DEFAULT_API_URL;
+      }
+      settingsModal.classList.remove('hidden');
+    });
+
+    btnCloseSettings.addEventListener('click', () => settingsModal.classList.add('hidden'));
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) settingsModal.classList.add('hidden');
+    });
+
+    btnSaveApiUrl.addEventListener('click', () => {
+      const url = apiUrlInput.value.trim();
+      try {
+        localStorage.setItem(STORAGE_KEY_API_URL, url);
+      } catch (e) {}
+      settingsModal.classList.add('hidden');
+      if (url) fetchLiveData(url);
+    });
+
+    btnResetToSample.addEventListener('click', () => {
+      try {
+        localStorage.removeItem(STORAGE_KEY_API_URL);
+        localStorage.removeItem(STORAGE_KEY_POSTS);
+      } catch (e) {}
+      apiUrlInput.value = DEFAULT_API_URL;
+      posts = INITIAL_POSTS.map(p => ({ ...p, stageState: inferClientStageState(p) }));
+      document.getElementById('syncStatusText').textContent = 'Cached Data';
+      settingsModal.classList.add('hidden');
+      applyFilters();
+      updateKPIs();
+      showToast('Local cache cleared & reset');
+    });
+
+    btnSyncNow.addEventListener('click', () => {
+      let url = DEFAULT_API_URL;
+      try {
+        url = localStorage.getItem(STORAGE_KEY_API_URL) || DEFAULT_API_URL;
+      } catch (e) {}
+      fetchLiveData(url);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      let targetUrl = DEFAULT_API_URL;
+      try {
+        const savedUrl = localStorage.getItem(STORAGE_KEY_API_URL);
+        if (savedUrl) targetUrl = savedUrl;
+        else localStorage.setItem(STORAGE_KEY_API_URL, DEFAULT_API_URL);
+      } catch (e) {}
+
+      apiUrlInput.value = targetUrl;
+      updateKPIs();
+      applyFilters();
+
+      if (targetUrl) fetchLiveData(targetUrl);
+    });
+  </script>
+</body>
+</html>
